@@ -255,187 +255,105 @@ function startOAuthServer() {
 async function googleLogin() {
   loadCredentials();
 
-  const oauthServerPromise =
-    startOAuthServer();
+  const server = http.createServer();
 
-  /*
-   * startOAuthServer 會等到 Google callback
-   * 才 resolve，所以需要先從 Server 取得 Port。
-   *
-   * 這裡重新採用明確的 callback server 建立方式。
-   */
-  const server =
-    http.createServer();
+  const port = await new Promise((resolve, reject) => {
+    server.once('error', reject);
 
-  const port =
-    await new Promise(
-      (resolve, reject) => {
-        server.once(
-          'error',
-          reject
-        );
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
 
-        server.listen(
-          0,
-          '127.0.0.1',
-          () => {
-            const address =
-              server.address();
-
-            if (
-              !address ||
-              typeof address === 'string'
-            ) {
-              server.close();
-
-              reject(
-                new Error(
-                  '無法取得 OAuth callback Server Port。'
-                )
-              );
-
-              return;
-            }
-
-            resolve(
-              address.port
-            );
-          }
-        );
+      if (!address || typeof address === 'string') {
+        server.close();
+        reject(new Error('無法取得 OAuth callback Server Port。'));
+        return;
       }
-    );
 
-  oauth2Client =
-    createOAuthClient(port);
+      resolve(address.port);
+    });
+  });
 
-  const authUrl =
-    oauth2Client.generateAuthUrl({
+  const codePromise = new Promise((resolve, reject) => {
+    server.on('request', (req, res) => {
+      const parsed = url.parse(req.url, true);
+
+      if (parsed.pathname !== '/oauth2callback') {
+        res.statusCode = 404;
+        res.end('Not Found');
+        return;
+      }
+
+      if (parsed.query.error) {
+        res.end('登入已取消，可以關閉此視窗。');
+        server.close();
+        reject(new Error(parsed.query.error));
+        return;
+      }
+
+      const code = parsed.query.code;
+
+      if (!code) {
+        res.statusCode = 400;
+        res.end('沒有取得 Google OAuth 授權碼。');
+        server.close();
+        reject(new Error('Google OAuth callback 沒有回傳 code。'));
+        return;
+      }
+
+      res.end(`
+        <html>
+          <body style="font-family:sans-serif;padding:40px">
+            Google 登入完成，可以關閉此視窗。
+          </body>
+        </html>
+      `);
+
+      server.close();
+      resolve(code);
+    });
+  });
+
+  try {
+    oauth2Client = createOAuthClient(port);
+
+    const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       prompt: 'consent',
       scope: SCOPES
     });
 
-  sendStatus(
-    'info',
-    '正在開啟 Google 登入頁面…'
-  );
+    sendStatus('info', '正在開啟 Google 登入頁面…');
 
-  await shell.openExternal(
-    authUrl
-  );
+    await shell.openExternal(authUrl);
 
-  const code =
-    await new Promise(
-      (resolve, reject) => {
-        server.on(
-          'request',
-          (req, res) => {
-            const parsed =
-              url.parse(
-                req.url,
-                true
-              );
+    const code = await codePromise;
 
-            if (
-              parsed.pathname !==
-              '/oauth2callback'
-            ) {
-              res.statusCode = 404;
-              res.end('Not Found');
-              return;
-            }
+    const { tokens } =
+      await oauth2Client.getToken(code);
 
-            if (
-              parsed.query.error
-            ) {
-              res.end(
-                '登入已取消，可以關閉此視窗。'
-              );
+    oauth2Client.setCredentials(tokens);
 
-              server.close();
-
-              reject(
-                new Error(
-                  parsed.query.error
-                )
-              );
-
-              return;
-            }
-
-            const code =
-              parsed.query.code;
-
-            if (!code) {
-              res.statusCode = 400;
-
-              res.end(
-                '沒有取得 Google OAuth 授權碼。'
-              );
-
-              server.close();
-
-              reject(
-                new Error(
-                  'Google OAuth callback 沒有回傳 code。'
-                )
-              );
-
-              return;
-            }
-
-            res.end(`
-              <html>
-                <body style="font-family:sans-serif;padding:40px">
-                  Google 登入完成，可以關閉此視窗。
-                </body>
-              </html>
-            `);
-
-            server.close();
-
-            resolve(code);
-          }
-        );
-      }
-    );
-
-  const { tokens } =
-    await oauth2Client.getToken(
-      code
-    );
-
-  oauth2Client.setCredentials(
-    tokens
-  );
-
-  fs.mkdirSync(
-    path.dirname(tokenPath()),
-    {
+    fs.mkdirSync(path.dirname(tokenPath()), {
       recursive: true
-    }
-  );
+    });
 
-  fs.writeFileSync(
-    tokenPath(),
-    JSON.stringify(
-      tokens,
-      null,
-      2
-    ),
-    'utf8'
-  );
+    fs.writeFileSync(
+      tokenPath(),
+      JSON.stringify(tokens, null, 2),
+      'utf8'
+    );
 
-  sendStatus(
-    'logged-in',
-    'Google 登入成功'
-  );
+    sendStatus('logged-in', 'Google 登入成功');
 
-  return {
-    ok: true
-  };
+    return { ok: true };
+  } catch (error) {
+    try {
+      server.close();
+    } catch (_) {}
+
+    throw error;
+  }
 }
-
 function loadSavedAuth() {
   if (
     !fs.existsSync(
