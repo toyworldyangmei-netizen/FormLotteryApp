@@ -1,0 +1,26 @@
+{
+  "name": "form-lottery-app",
+  "version": "1.0.0",
+  "description": "表單抽選 App - Google Forms API 測試版",
+  "main": "app/main.js",
+  "author": "TOY WORLD",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "googleapis": "^164.1.0"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "tw.toyworld.formlottery",
+    "productName": "表單抽選 App",
+    "directories": { "output": "dist" },
+    "files": ["app/**/*", "package.json"],
+    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] },
+    "portable": { "artifactName": "FormLotteryApp-${version}.exe" }
+  }
+}

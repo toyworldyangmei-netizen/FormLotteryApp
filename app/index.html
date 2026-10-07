@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>表單抽選 App</title><link rel="stylesheet" href="app.css"></head>
+<body>
+<div class="orb orb-a"></div><div class="orb orb-b"></div>
+<header><div><div class="eyebrow">FORM LOTTERY APP · API TEST</div><h1>🎯 表單抽選 App</h1><p>V1.3.8 UI 方向 · Google Forms API 測試版</p></div><div class="actions"><button id="loginBtn" class="primary">🔵 使用 Google 帳號登入</button><button id="logoutBtn" class="ghost">登出</button></div></header>
+<main>
+<section class="glass hero"><div><span class="pill" id="statusPill">● 尚未登入</span><h2>先登入你的 Google 帳號</h2><p>這個測試版不使用原本私有 Apps Script 後端。登入後，App 會直接讀取你自己有權限使用的 Google 表單。</p></div><div class="hero-actions"><button id="refreshBtn">↻ 重新讀取表單</button><button id="openV138Btn">查看 V1.3.8 原版</button></div></section>
+<section class="grid"><div class="glass panel"><div class="panel-head"><div><h3>我的 Google 表單</h3><small id="formCount">尚未載入</small></div><button id="refreshSmall">重新整理</button></div><div id="forms" class="forms"><div class="empty">登入後會在這裡顯示你的 Google Forms。</div></div></div>
+<div class="glass panel detail"><div class="panel-head"><div><h3>表單內容</h3><small id="detailSub">尚未選擇</small></div><button id="responsesBtn" disabled>讀取回覆</button></div><div id="detail" class="detail-body"><div class="empty">選擇左側表單後查看題目。</div></div></div></section>
+</main><footer>測試版本 · credentials.json 請放在 EXE 同一層，勿上傳至 GitHub</footer>
+<script src="renderer.js"></script></body></html>

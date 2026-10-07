@@ -1,0 +1,4905 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>玩具e哥 - 抽選網頁</title>
+
+<style>
+/* =========================================================
+  LIQUID GLASS UI
+  功能邏輯不變，僅重新設計視覺層
+  ========================================================= */
+
+:root {
+  --lg-bg: #07111f;
+  --lg-bg-2: #0b1728;
+
+  --lg-glass: rgba(255,255,255,0.075);
+  --lg-glass-strong: rgba(255,255,255,0.105);
+  --lg-glass-soft: rgba(255,255,255,0.045);
+
+  --lg-border: rgba(255,255,255,0.14);
+  --lg-border-light: rgba(255,255,255,0.22);
+
+  --lg-text: #f8fbff;
+  --lg-muted: #9eafc4;
+
+  --lg-blue: #62d8ff;
+  --lg-blue-2: #6f8cff;
+  --lg-cyan: #4de8d7;
+
+  --lg-success: #5ff0bd;
+  --lg-danger: #ff718d;
+
+  --lg-shadow:
+    0 30px 80px rgba(0,0,0,0.42),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+
+  --lg-glow:
+    0 0 50px rgba(73,196,255,0.10);
+
+  --lg-radius-xl: 30px;
+  --lg-radius-lg: 22px;
+  --lg-radius-md: 16px;
+  --lg-radius-sm: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "PingFang TC",
+    "Microsoft JhengHei",
+    "Noto Sans TC",
+    sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  padding: 40px 20px;
+
+  color: var(--lg-text);
+
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(56,189,248,0.16),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(99,102,241,0.17),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 50% 90%,
+      rgba(45,212,191,0.09),
+      transparent 35%
+    ),
+    linear-gradient(
+      145deg,
+      var(--lg-bg),
+      var(--lg-bg-2)
+    );
+
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* 背景流動光球 */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(70px);
+  opacity: 0.32;
+}
+
+body::before {
+  top: -180px;
+  left: -140px;
+  background: rgba(55,190,255,0.45);
+  animation: floatOrbOne 14s ease-in-out infinite alternate;
+}
+
+body::after {
+  right: -180px;
+  bottom: -160px;
+  background: rgba(105,90,255,0.4);
+  animation: floatOrbTwo 17s ease-in-out infinite alternate;
+}
+
+@keyframes floatOrbOne {
+  from {
+    transform: translate3d(0,0,0) scale(1);
+  }
+  to {
+    transform: translate3d(90px,70px,0) scale(1.15);
+  }
+}
+
+@keyframes floatOrbTwo {
+  from {
+    transform: translate3d(0,0,0) scale(1);
+  }
+  to {
+    transform: translate3d(-80px,-60px,0) scale(1.12);
+  }
+}
+
+/* =========================================================
+  MAIN GLASS CONTAINER
+  ========================================================= */
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+
+  padding: 42px;
+
+  border: 1px solid var(--lg-border);
+  border-radius: var(--lg-radius-xl);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.105),
+      rgba(255,255,255,0.035)
+    );
+
+  backdrop-filter: blur(28px) saturate(135%);
+  -webkit-backdrop-filter: blur(28px) saturate(135%);
+
+  box-shadow:
+    0 40px 100px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -1px 0 rgba(255,255,255,0.025),
+    var(--lg-glow);
+
+  overflow: hidden;
+}
+
+/* 玻璃頂部反光 */
+
+.container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.55),
+      transparent
+    );
+
+  opacity: 0.65;
+}
+
+/* 玻璃斜向反光 */
+
+.container::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 65%;
+  height: 150%;
+
+  background:
+    linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255,255,255,0.035) 48%,
+      transparent 60%
+    );
+
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+/* =========================================================
+  HEADER
+  ========================================================= */
+
+header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.logo-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  min-width: 220px;
+  min-height: 80px;
+
+  padding: 14px 25px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.025)
+    );
+
+  border: 1px solid rgba(255,255,255,0.10);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 15px 40px rgba(0,0,0,0.16);
+}
+
+.logo-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      115deg,
+      transparent 20%,
+      rgba(255,255,255,0.08) 48%,
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.logo-img {
+  position: relative;
+  z-index: 1;
+
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+
+  display: block;
+}
+
+/* =========================================================
+  SECTION TITLE
+  ========================================================= */
+
+.section-title {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 18px;
+
+  color: var(--lg-text);
+
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.section-title::before {
+  content: "";
+
+  width: 4px;
+  height: 24px;
+
+  flex: 0 0 4px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--lg-blue),
+      var(--lg-blue-2)
+    );
+
+  box-shadow:
+    0 0 15px rgba(98,216,255,0.65);
+}
+
+.section-title::after {
+  content: "";
+
+  flex: 1;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(98,216,255,0.20),
+      transparent
+    );
+}
+
+/* =========================================================
+  GLASS PANEL
+  ========================================================= */
+
+.panel {
+  position: relative;
+
+  padding: 26px;
+  margin-bottom: 24px;
+
+  border-radius: var(--lg-radius-lg);
+
+  border: 1px solid var(--lg-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.075),
+      rgba(255,255,255,0.025)
+    );
+
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -1px 0 rgba(255,255,255,0.025),
+    0 18px 45px rgba(0,0,0,0.16);
+
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.panel:hover {
+  border-color: rgba(98,216,255,0.24);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.09),
+    0 20px 55px rgba(0,0,0,0.20),
+    0 0 30px rgba(98,216,255,0.035);
+}
+
+/* =========================================================
+  FORM
+  ========================================================= */
+
+.form-group {
+  margin-bottom: 19px;
+}
+
+.form-group label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: var(--lg-muted);
+
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+select,
+textarea {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  color: var(--lg-text);
+
+  background:
+    rgba(0,0,0,0.18);
+
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: var(--lg-radius-sm);
+
+  outline: none;
+
+  font-size: 0.95rem;
+
+  box-shadow:
+    inset 0 1px 4px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.025);
+
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: rgba(158,175,196,0.65);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(98,216,255,0.60);
+
+  background:
+    rgba(0,0,0,0.22);
+
+  box-shadow:
+    0 0 0 3px rgba(98,216,255,0.08),
+    0 0 25px rgba(98,216,255,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 130px;
+  font-family: monospace;
+  line-height: 1.55;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+/* =========================================================
+  GRID
+  ========================================================= */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+/* =========================================================
+  FILE UPLOAD
+  ========================================================= */
+
+.file-upload-btn {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 17px;
+
+  color: var(--lg-blue);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(98,216,255,0.08),
+      rgba(111,140,255,0.045)
+    );
+
+  border: 1px dashed rgba(98,216,255,0.48);
+  border-radius: var(--lg-radius-md);
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.file-upload-btn:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(98,216,255,0.13),
+      rgba(111,140,255,0.075)
+    );
+
+  border-color: rgba(98,216,255,0.78);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.18),
+    0 0 25px rgba(98,216,255,0.08);
+}
+
+/* =========================================================
+  CHECKBOX
+  ========================================================= */
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin-top: 12px;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--lg-text);
+
+  cursor: pointer;
+  user-select: none;
+
+  font-size: 0.9rem;
+}
+
+.checkbox-label input {
+  width: 17px;
+  height: 17px;
+
+  accent-color: var(--lg-blue);
+
+  cursor: pointer;
+}
+
+/* =========================================================
+  BUTTON
+  ========================================================= */
+
+.btn-action {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  padding: 15px 24px;
+
+  color: #06111c;
+
+  background:
+    linear-gradient(
+      135deg,
+      #65e2ff 0%,
+      #75bfff 45%,
+      #7589ff 100%
+    );
+
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: var(--lg-radius-md);
+
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 12px 30px rgba(73,176,255,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.65);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
+}
+
+.btn-action::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: -120%;
+
+  width: 70%;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.42),
+      transparent
+    );
+
+  transform: skewX(-20deg);
+
+  transition: left 0.65s ease;
+}
+
+.btn-action:hover::before {
+  left: 140%;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+
+  filter: brightness(1.06);
+
+  box-shadow:
+    0 16px 38px rgba(73,176,255,0.25),
+    0 0 30px rgba(98,216,255,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+}
+
+.btn-action:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-secondary {
+  color: var(--lg-blue);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.065),
+      rgba(255,255,255,0.025)
+    );
+
+  border: 1px solid rgba(98,216,255,0.38);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.btn-secondary:hover {
+  color: #dff9ff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(98,216,255,0.13),
+      rgba(111,140,255,0.08)
+    );
+
+  border-color: rgba(98,216,255,0.68);
+
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.18),
+    0 0 25px rgba(98,216,255,0.08);
+}
+
+/* =========================================================
+  STATS
+  ========================================================= */
+
+.stats-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+
+  margin-top: 20px;
+  padding: 15px 18px;
+
+  color: var(--lg-muted);
+
+  background:
+    rgba(0,0,0,0.16);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--lg-radius-md);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.025);
+}
+
+.stats-box span {
+  color: var(--lg-blue);
+  font-weight: 750;
+
+  text-shadow:
+    0 0 15px rgba(98,216,255,0.30);
+}
+
+/* =========================================================
+  RESULT
+  ========================================================= */
+
+.result-container {
+  position: relative;
+
+  margin-top: 36px;
+
+  animation: resultAppear 0.55s ease-out;
+}
+
+@keyframes resultAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#prizeTitleDisplay {
+  display: inline-block;
+
+  margin-bottom: 18px;
+  padding: 9px 15px;
+
+  color: #dffaff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(98,216,255,0.10),
+      rgba(111,140,255,0.06)
+    );
+
+  border: 1px solid rgba(98,216,255,0.20);
+  border-radius: 999px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 25px rgba(98,216,255,0.04);
+}
+
+/* =========================================================
+  MASK CONTROL
+  ========================================================= */
+
+.mask-control-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  padding: 17px 20px;
+  margin-bottom: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.065),
+      rgba(255,255,255,0.025)
+    );
+
+  border: 1px solid var(--lg-border);
+  border-radius: var(--lg-radius-md);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.mode-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  position: relative;
+
+  padding: 9px 15px;
+
+  color: var(--lg-muted);
+
+  background:
+    rgba(0,0,0,0.16);
+
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.mode-btn.active {
+  color: #06111c;
+
+  background:
+    linear-gradient(
+      135deg,
+      #65e2ff,
+      #778dff
+    );
+
+  border-color: rgba(255,255,255,0.30);
+
+  box-shadow:
+    0 5px 18px rgba(98,216,255,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.mode-btn:hover:not(.active) {
+  color: var(--lg-text);
+
+  border-color: rgba(98,216,255,0.38);
+
+  background:
+    rgba(98,216,255,0.06);
+}
+
+.sub-mask-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  color: var(--lg-muted);
+
+  font-size: 0.85rem;
+
+  transition:
+    opacity 0.3s ease;
+}
+
+/* =========================================================
+  TABLE
+  ========================================================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+
+  border-radius: var(--lg-radius-md);
+  border: 1px solid rgba(255,255,255,0.10);
+
+  background:
+    rgba(0,0,0,0.12);
+}
+
+table {
+  width: 100%;
+  min-width: 600px;
+
+  border-collapse: collapse;
+
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  padding: 14px 18px;
+
+  text-align: left;
+
+  border-bottom: 1px solid rgba(255,255,255,0.075);
+}
+
+th {
+  color: #bdefff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(98,216,255,0.105),
+      rgba(111,140,255,0.065)
+    );
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  backdrop-filter: blur(15px);
+}
+
+td {
+  color: #e6edf5;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr {
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+tbody tr:hover {
+  background:
+    rgba(98,216,255,0.045);
+}
+
+/* =========================================================
+  BADGE
+  ========================================================= */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 10px;
+
+  color: var(--lg-blue);
+
+  background:
+    rgba(98,216,255,0.075);
+
+  border: 1px solid rgba(98,216,255,0.18);
+  border-radius: 8px;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* =========================================================
+  RESULT ACTIONS
+  ========================================================= */
+
+.result-actions {
+  display: flex;
+  gap: 15px;
+
+  margin-top: 25px;
+}
+
+.result-actions .btn-action {
+  flex: 1;
+}
+
+/* =========================================================
+  MOBILE
+  ========================================================= */
+
+@media (max-width: 768px) {
+
+  body {
+    padding: 18px 12px;
+  }
+
+  .container {
+    padding: 22px 16px;
+    border-radius: 24px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .panel {
+    padding: 20px 16px;
+    border-radius: 19px;
+  }
+
+  .logo-wrapper {
+    min-width: 180px;
+    padding: 12px 18px;
+  }
+
+  .logo-img {
+    max-width: 240px;
+  }
+
+  .mask-control-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mode-btn-group {
+    width: 100%;
+  }
+
+  .mode-btn {
+    flex: 1;
+  }
+
+  .sub-mask-group {
+    align-items: flex-start;
+  }
+
+  .stats-box {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .checkbox-group {
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .section-title {
+    font-size: 0.98rem;
+  }
+
+  #prizeTitleDisplay {
+    display: block;
+    line-height: 1.6;
+  }
+
+  .logo-img { max-width:240px !important; max-height:96px !important; }
+}
+
+@media (max-width: 420px) {
+
+  body {
+    padding: 10px 8px;
+  }
+
+  .container {
+    padding: 16px 11px;
+    border-radius: 20px;
+  }
+
+  .panel {
+    padding: 17px 13px;
+  }
+
+  .btn-action {
+    padding: 14px 15px;
+    font-size: 0.92rem;
+  }
+
+  .mode-btn-group {
+    flex-direction: column;
+  }
+
+  .mode-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+  REDUCED MOTION
+  ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Logo 優化：使用網站原圖本身，不再套第二層玻璃外框 */
+.logo-wrapper {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.logo-wrapper::before {
+  display: none !important;
+}
+.logo-img {
+  width: auto !important;
+  max-width: min(300px, 82vw) !important;
+  max-height: 110px !important;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.16));
+}
+
+/* Liquid Glass：原始主題 */
+body[data-theme="liquid"] { --theme-button-text:#07111f; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-action,
+  .mode-btn {
+    transition:none !important;
+  }
+
+  .btn-action::before {
+    display:none !important;
+  }
+}
+
+
+/* =========================================================
+  BUTTON TEXT CONTRAST FIX
+  修正主題 UI 導致的按鈕文字不清楚問題
+  不修改任何抽獎 JavaScript
+  ========================================================= */
+
+/* 所有按鈕：禁止瀏覽器/主題繼承造成文字透明、陰影發光 */
+button,
+button * {
+  -webkit-text-fill-color: currentColor;
+  text-shadow: none;
+}
+
+/* 主要操作按鈕：固定高對比文字 */
+.btn-action {
+  color: #07111f !important;
+  -webkit-text-fill-color: #07111f !important;
+  text-shadow: none !important;
+  font-weight: 800 !important;
+  isolation: isolate;
+}
+
+/* 掃光效果永遠在文字後面，不再遮住文字 */
+.btn-action::before {
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* 次要按鈕 */
+.btn-action.btn-secondary,
+.btn-secondary {
+  color: var(--lg-blue) !important;
+  -webkit-text-fill-color: var(--lg-blue) !important;
+  text-shadow: none !important;
+  font-weight: 750 !important;
+}
+
+/* 次要按鈕 hover：仍維持可讀色 */
+.btn-action.btn-secondary:hover,
+.btn-secondary:hover {
+  color: var(--lg-text) !important;
+  -webkit-text-fill-color: var(--lg-text) !important;
+  text-shadow: none !important;
+}
+
+/* 模式切換按鈕：未選取/已選取分開處理 */
+.mode-btn {
+  color: var(--lg-text) !important;
+  -webkit-text-fill-color: var(--lg-text) !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+.mode-btn:hover:not(.active) {
+  color: var(--lg-text) !important;
+  -webkit-text-fill-color: var(--lg-text) !important;
+}
+
+.mode-btn.active {
+  color: #07111f !important;
+  -webkit-text-fill-color: #07111f !important;
+  background: linear-gradient(
+    135deg,
+    var(--lg-blue),
+    var(--lg-blue-2)
+  ) !important;
+  text-shadow: none !important;
+  font-weight: 800 !important;
+}
+
+/* 檔案上傳按鈕不是主要實心按鈕，因此保持主題色 */
+.file-upload-btn {
+  color: var(--lg-blue) !important;
+  -webkit-text-fill-color: var(--lg-blue) !important;
+  text-shadow: none !important;
+}
+
+/* 鍵盤 focus 不用文字發光 */
+.btn-action:focus-visible,
+.btn-secondary:focus-visible,
+.mode-btn:focus-visible {
+  text-shadow: none !important;
+}
+
+
+/* =========================================================
+  FINAL THEME COLOR CONSISTENCY LAYER
+  所有主要視覺元件跟隨目前 data-theme；不修改抽獎功能
+  ========================================================= */
+:root {
+  --ui-surface: rgba(0,0,0,.18);
+  --ui-surface-soft: rgba(0,0,0,.12);
+  --ui-surface-hover: rgba(255,255,255,.06);
+  --ui-border: var(--lg-border);
+  --ui-border-soft: rgba(255,255,255,.10);
+  --ui-text: var(--lg-text);
+  --ui-muted: var(--lg-muted);
+  --ui-accent: var(--lg-blue);
+  --ui-accent-2: var(--lg-blue-2);
+  --ui-accent-rgb: 98,216,255;
+  --ui-or-bg: rgba(7,17,31,.92);
+  --ui-or-line: rgba(255,255,255,.12);
+  --ui-table-head: rgba(98,216,255,.105);
+  --ui-table-row: rgba(255,255,255,.035);
+  --ui-prize-text: #dffaff;
+  --ui-prize-bg: rgba(98,216,255,.10);
+}
+
+body[data-theme="liquid"] {
+  --ui-surface: rgba(0,0,0,.18);
+  --ui-surface-soft: rgba(0,0,0,.12);
+  --ui-surface-hover: rgba(98,216,255,.06);
+  --ui-border: var(--lg-border);
+  --ui-border-soft: rgba(255,255,255,.10);
+  --ui-accent-rgb: 98,216,255;
+  --ui-or-bg: rgba(7,17,31,.90);
+  --ui-or-line: rgba(255,255,255,.12);
+  --ui-table-head: rgba(98,216,255,.105);
+  --ui-table-row: rgba(98,216,255,.045);
+  --ui-prize-text: #dffaff;
+  --ui-prize-bg: rgba(98,216,255,.10);
+}
+
+/* CSV「或」：跟隨目前主題的「按鈕文字色」 */
+.csv-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 20px 0;
+  color: var(--theme-button-text);
+  font-size: .85rem;
+  line-height: 1;
+}
+.csv-or-divider-text {
+  flex: 0 0 auto;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  color: var(--theme-button-text) !important;
+  -webkit-text-fill-color: var(--theme-button-text) !important;
+  background: transparent !important;
+  background-image: none !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+  font-weight: 700;
+  text-shadow: none;
+}
+.csv-or-divider-line {
+  flex: 1 1 auto;
+  height: 1px;
+  min-width: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--theme-button-text) 32%, transparent),
+    transparent
+  );
+  opacity: .9;
+}
+
+/* 主要表單與統計區 */
+input[type="text"], input[type="number"], input[type="url"], select, textarea {
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border-color: var(--ui-border-soft);
+}
+input[type="text"]:focus, input[type="number"]:focus, input[type="url"]:focus, select:focus, textarea:focus {
+  background: var(--ui-surface);
+  border-color: color-mix(in srgb, var(--ui-accent) 60%, transparent);
+  box-shadow: 0 0 0 3px rgba(var(--ui-accent-rgb),.08), 0 0 25px rgba(var(--ui-accent-rgb),.08), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.stats-box { color: var(--ui-muted); background: var(--ui-surface-soft); border-color: var(--ui-border-soft); }
+.stats-box span { color: var(--ui-accent); text-shadow: 0 0 15px rgba(var(--ui-accent-rgb),.24); }
+
+/* 過濾/遮蔽模式按鈕 */
+.mode-btn { color: var(--ui-muted); background: var(--ui-surface-soft); border-color: var(--ui-border-soft); }
+.mode-btn:hover:not(.active) { color: var(--ui-text); background: var(--ui-surface-hover); border-color: color-mix(in srgb, var(--ui-accent) 38%, transparent); }
+.mode-btn.active { color: var(--theme-button-text); background: linear-gradient(135deg,var(--lg-blue),var(--lg-blue-2)); }
+
+/* 表格 */
+.table-wrapper { background: var(--ui-surface-soft); border-color: var(--ui-border-soft); }
+th, td { border-bottom-color: var(--ui-border-soft); }
+th { color: var(--ui-text); background: linear-gradient(135deg,var(--ui-table-head),color-mix(in srgb, var(--ui-table-head) 55%, transparent)); }
+td { color: var(--ui-text); }
+tbody tr:hover { background: var(--ui-table-row); }
+
+/* 結果獎項標籤 */
+#prizeTitleDisplay { color: var(--ui-prize-text); background: linear-gradient(135deg,var(--ui-prize-bg),rgba(var(--ui-accent-rgb),.04)); border-color: color-mix(in srgb, var(--ui-accent) 22%, transparent); }
+
+/* 次要按鈕、清除按鈕 */
+.btn-secondary { color: var(--ui-accent) !important; border-color: color-mix(in srgb, var(--ui-accent) 38%, transparent); }
+#clearPasteBtn { color: var(--lg-danger) !important; -webkit-text-fill-color: var(--lg-danger) !important; border-color: color-mix(in srgb, var(--lg-danger) 42%, transparent) !important; }
+
+select { color-scheme: dark; }
+
+/* 不支援 color-mix 的瀏覽器仍保留可讀的基礎邊框 */
+@supports not (color: color-mix(in srgb, red, transparent)) {
+  input[type="text"], input[type="number"], input[type="url"], select, textarea, .mode-btn, .table-wrapper, th, td { border-color: var(--ui-border-soft); }
+  #prizeTitleDisplay { border-color: var(--ui-border-soft); }
+  .btn-secondary { border-color: var(--ui-border-soft); }
+}
+
+</style>
+
+<style>
+
+/* ===== CSV「或」最終顏色鎖定 ===== */
+body .csv-or-divider .csv-or-divider-text {
+  color: var(--theme-button-text) !important;
+  -webkit-text-fill-color: var(--theme-button-text) !important;
+  text-fill-color: var(--theme-button-text) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+</style>
+
+<style id="csv-or-final-fix">
+/* CSV「或」最終修正：與上方「點擊此處選擇 CSV 檔案」按鈕文字使用完全相同的 --lg-blue */
+html body .csv-or-divider .csv-or-divider-text {
+  color: var(--lg-blue) !important;
+  -webkit-text-fill-color: var(--lg-blue) !important;
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  mix-blend-mode: normal !important;
+  font-weight: 700 !important;
+}
+
+html body .csv-or-divider {
+  color: var(--lg-blue) !important;
+}
+
+html body .csv-or-divider .csv-or-divider-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--lg-blue) 32%, transparent),
+    transparent
+  ) !important;
+}
+
+/* =========================================================
+  GOOGLE FORM 匯入
+  與「手動複製貼上名單」使用相同的 form-group UI 層級
+  ========================================================= */
+
+.google-form-url-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.google-form-url-row input {
+  flex: 1;
+  min-width: 0;
+
+  /* 與手動複製貼上 textarea 使用同一套輸入框視覺規格 */
+  padding: 14px 16px;
+  color: var(--lg-text);
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: var(--lg-radius-sm);
+  outline: none;
+  font-size: 0.95rem;
+  box-shadow:
+    inset 0 1px 4px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.025);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.google-form-url-row input::placeholder {
+  color: rgba(158,175,196,0.65);
+}
+
+.google-form-url-row input:focus {
+  border-color: rgba(98,216,255,0.60);
+  background: rgba(0,0,0,0.22);
+  box-shadow:
+    0 0 0 3px rgba(98,216,255,0.08),
+    0 0 25px rgba(98,216,255,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.google-form-load-btn {
+  width: auto;
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.google-form-status {
+  margin-top: 8px;
+  color: var(--lg-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.google-form-status.success {
+  color: var(--lg-success);
+}
+
+.google-form-status.error {
+  color: var(--lg-danger);
+}
+
+.google-form-hint {
+  margin-top: 5px;
+  color: var(--lg-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.google-form-memory-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  align-items: stretch;
+}
+
+.google-form-memory-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-form-memory-clear {
+  width: auto;
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+.date-filter-row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.date-filter-field {
+  flex: 1;
+  min-width: 150px;
+}
+
+.date-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.date-filter-status {
+  margin-top: 8px;
+  color: var(--lg-muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 720px) {
+  .google-form-url-row,
+  .google-form-memory-row {
+    flex-direction: column;
+  }
+
+  .google-form-load-btn,
+  .google-form-memory-clear {
+    width: 100%;
+  }
+
+  .date-filter-row {
+    display: block;
+  }
+
+  .date-filter-field {
+    margin-bottom: 10px;
+  }
+
+  .date-filter-actions button {
+    flex: 1;
+  }
+}
+
+</style>
+
+
+<style id="v135-memory-dark-ui">
+/* V1.3.5 表單記憶選單：僅強化暗色系視覺，不改功能 */
+.google-form-memory-row select#googleFormMemorySelect{
+ color:#f2f5ff!important;-webkit-text-fill-color:#f2f5ff!important;background:linear-gradient(180deg,rgba(31,38,57,.98),rgba(21,26,40,.98))!important;border:1px solid rgba(150,169,220,.38)!important;color-scheme:dark;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 20px rgba(0,0,0,.24)!important;
+}
+.google-form-memory-row select#googleFormMemorySelect:hover{background:linear-gradient(180deg,rgba(39,48,72,.99),rgba(25,31,48,.99))!important;border-color:rgba(139,164,231,.68)!important;}
+.google-form-memory-row select#googleFormMemorySelect:focus{border-color:rgba(139,164,231,.9)!important;box-shadow:0 0 0 3px rgba(126,151,220,.16),0 10px 24px rgba(0,0,0,.28)!important;}
+.google-form-memory-row select#googleFormMemorySelect option{background:#151b2a!important;color:#eef2ff!important;-webkit-text-fill-color:#eef2ff!important;}
+.google-form-memory-row select#googleFormMemorySelect option:checked{background:#405582!important;color:#fff!important;-webkit-text-fill-color:#fff!important;}
+</style>
+
+<style id="v135-custom-date-dark-ui">
+/* =========================================================
+   V1.3.4 自訂日期選擇器・暗色系 UI
+   原生 input[type=date] 僅作為隱藏資料來源；原有日期篩選 JS 仍讀取同一個 value
+   ========================================================= */
+#dateFilterGroup .custom-date-wrap{position:relative;width:100%;}
+#dateFilterGroup .custom-date-display{
+  width:100%;box-sizing:border-box;min-height:52px;padding:0 48px 0 16px;
+  border:1px solid rgba(145,160,205,.25);border-radius:14px;
+  background:rgba(24,29,43,.92);color:#edf2ff;font-size:16px;font-weight:600;
+  letter-spacing:.3px;cursor:pointer;display:flex;align-items:center;position:relative;
+  transition:all .18s ease;box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04);
+}
+#dateFilterGroup .custom-date-display:hover{border-color:rgba(126,151,220,.55);box-shadow:0 7px 18px rgba(0,0,0,.25);transform:translateY(-1px);}
+#dateFilterGroup .custom-date-display:focus{outline:none;border-color:rgba(126,151,220,.8);box-shadow:0 0 0 4px rgba(126,151,220,.13),0 7px 18px rgba(0,0,0,.22);}
+#dateFilterGroup .custom-date-display.is-placeholder{color:#8e99b2;font-weight:500;}
+#dateFilterGroup .custom-date-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none;}
+#dateFilterGroup .native-date-source{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;}
+/* V1.3.8：月曆會在開啟時移到 body，因此樣式不能再依賴 #dateFilterGroup 父層。 */
+body .custom-calendar{
+  position:fixed!important;z-index:2147483647!important;left:0;top:0;width:300px;padding:14px;
+  margin:0!important;inset:auto;transform:none!important;
+  border:1px solid rgba(145,160,205,.25);border-radius:18px;background:rgba(25,30,44,.98);
+  color:#edf2ff;box-shadow:0 20px 46px rgba(0,0,0,.42),0 2px 9px rgba(0,0,0,.25);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);box-sizing:border-box;
+}
+body .custom-calendar.hidden{display:none;}
+body .custom-calendar .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+body .custom-calendar .cal-title{font-size:15px;font-weight:700;color:#edf2ff;}
+body .custom-calendar .cal-nav{width:32px;height:32px;border:0;border-radius:10px;background:rgba(126,151,220,.12);color:#cbd7ff;font-size:18px;cursor:pointer;}
+body .custom-calendar .cal-nav:hover{background:rgba(126,151,220,.22);}
+body .custom-calendar .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+body .custom-calendar .cal-week{font-size:11px;text-align:center;color:#8d98b2;padding:4px 0 6px;font-weight:700;}
+body .custom-calendar .cal-day{height:34px;border:0;border-radius:9px;background:transparent;color:#dce3f4;font-size:13px;cursor:pointer;}
+body .custom-calendar .cal-day:hover{background:rgba(126,151,220,.16);}
+body .custom-calendar .cal-day.other{color:#606a80;}
+body .custom-calendar .cal-day.today{box-shadow:inset 0 0 0 1px rgba(145,170,235,.55);}
+body .custom-calendar .cal-day.selected{background:#5f7fd6;color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.28);}
+body .custom-calendar .cal-footer{display:flex;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid rgba(145,160,205,.14);}
+body .custom-calendar .cal-today{border:0;background:transparent;color:#aebfff;font-size:12px;font-weight:700;cursor:pointer;padding:5px 7px;}
+@media (max-width:700px){body .custom-calendar{width:calc(100vw - 48px);max-width:300px;}}
+/* V1.3.6：行動裝置將月曆移出玻璃容器，避免 iOS Safari 的 fixed 定位受到 backdrop-filter 影響 */
+body .custom-calendar.mobile-floating-calendar{
+  width:calc(100vw - 48px);
+  max-width:300px;
+}
+body .custom-calendar.mobile-floating-calendar.hidden{display:none;}
+
+@media (max-width:720px){
+  #dateFilterGroup .custom-date-display{min-height:50px;}
+}
+</style>
+
+</head>
+
+<body data-theme="liquid">
+
+<div class="container">
+
+<header>
+  <div class="logo-wrapper">
+    <img src="logo.png" alt="玩具e哥" class="logo-img">
+  </div>
+</header>
+
+<!-- =====================================================
+   第一步：匯入名單與過濾設定
+   ===================================================== -->
+
+<div class="panel">
+
+  <div class="section-title">
+    匯入名單與過濾重複設定
+  </div>
+
+  <div class="form-group">
+
+    <label for="csvFile">
+      上傳 CSV 檔案（支援 Excel 匯出與 UTF-8/Big5 編碼）
+    </label>
+
+    <label
+      for="csvFile"
+      class="file-upload-btn"
+      id="fileLabel"
+    >
+      📁 點擊此處選擇 CSV 檔案
+    </label>
+
+    <input
+      type="file"
+      id="csvFile"
+      accept=".csv"
+    >
+
+  </div>
+
+  <div class="csv-or-divider">
+    <span class="csv-or-divider-line"></span>
+    <span class="csv-or-divider-text">或</span>
+    <span class="csv-or-divider-line"></span>
+  </div>
+
+  <div class="form-group">
+
+    <label for="googleFormUrl">
+      📝 從 Google Form 讀取報名資料
+    </label>
+
+    <div class="google-form-url-row">
+      <input
+        type="url"
+        id="googleFormUrl"
+        placeholder="貼上 Google Form 網址（編輯、填寫或 forms.gle）"
+        autocomplete="off"
+      >
+
+      <button
+        type="button"
+        class="btn-action btn-secondary google-form-load-btn"
+        id="loadGoogleFormBtn"
+      >
+        ☁️ 讀取 Google Form
+      </button>
+    </div>
+
+    <div class="google-form-memory-row">
+      <select id="googleFormMemorySelect" aria-label="已記憶的 Google Form">
+        <option value="">📚 已記憶的表單（尚無記錄）</option>
+      </select>
+      <button type="button" class="btn-action btn-secondary google-form-memory-clear" id="clearGoogleFormMemoryBtn">
+        🗑️ 清除記憶
+      </button>
+    </div>
+
+    <div class="google-form-status" id="googleFormStatus">
+      尚未讀取 Google Form
+    </div>
+
+    <div class="google-form-hint">
+      支援編輯網址、填寫網址與 forms.gle 短網址；讀取後仍會沿用原有的 CSV、欄位辨識、重複過濾與抽獎流程。
+    </div>
+
+  </div>
+
+  <div class="form-group">
+
+    <label for="pasteArea">
+      手動複製貼上名單（首行為欄位標題，支援 Tab 鍵或逗號分隔）
+    </label>
+
+    <textarea
+      id="pasteArea"
+      rows="6"
+      placeholder="請在此貼上您的名單..."
+    ></textarea>
+
+    <div style="
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    ">
+
+      <button
+        type="button"
+        class="btn-action btn-secondary"
+        id="quickPasteBtn"
+        style="
+          padding:10px 18px;
+          font-size:0.9rem;
+          width:auto;
+        "
+      >
+        📋 一鍵貼上
+      </button>
+
+      <button
+        type="button"
+        class="btn-action btn-secondary"
+        id="parsePasteBtn"
+        style="
+          padding:10px 18px;
+          font-size:0.9rem;
+          width:auto;
+        "
+      >
+        🔍 分析貼上名單
+      </button>
+
+      <button
+        type="button"
+        class="btn-action btn-secondary"
+        id="clearPasteBtn"
+        style="
+          padding:10px 18px;
+          font-size:0.9rem;
+          width:auto;
+          color:var(--lg-danger);
+          border-color:rgba(255,113,141,0.42);
+        "
+      >
+        🗑️ 一鍵清除
+      </button>
+
+    </div>
+  </div>
+
+  <div
+    class="form-group"
+    id="dateFilterGroup"
+    style="margin-top:20px;"
+  >
+
+    <label>
+      📅 自訂日期篩選範圍（依「提交時間」）
+    </label>
+
+    <div class="date-filter-row">
+      <div class="date-filter-field">
+        <label for="dateFilterStart">開始日期</label>
+        <input type="date" id="dateFilterStart">
+      </div>
+      <div class="date-filter-field">
+        <label for="dateFilterEnd">結束日期</label>
+        <input type="date" id="dateFilterEnd">
+      </div>
+      <div class="date-filter-actions">
+        <button type="button" class="btn-action btn-secondary" id="applyDateFilterBtn" style="width:auto;padding:10px 18px;font-size:0.9rem;">套用</button>
+        <button type="button" class="btn-action btn-secondary" id="clearDateFilterBtn" style="width:auto;padding:10px 18px;font-size:0.9rem;">清除</button>
+      </div>
+    </div>
+
+    <div class="date-filter-status" id="dateFilterStatus">未啟用日期篩選</div>
+
+  </div>
+
+  <div
+    class="form-group"
+    style="margin-top:20px;"
+  >
+
+    <label>
+      勾選重複過濾條件（若符合勾選欄位相同者，系統自動保留第一筆並過濾後續重複）
+    </label>
+
+    <div class="checkbox-group">
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="chkEmail"
+          value="email"
+        >
+        電子信箱
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="chkName"
+          value="name"
+        >
+        姓名
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="chkPhone"
+          value="phone"
+        >
+        電話
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="chkId"
+          value="id"
+        >
+        身分證字號
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="chkNhi"
+          value="nhi"
+        >
+        健保卡號
+      </label>
+
+    </div>
+  </div>
+
+  <div
+    class="stats-box"
+    id="statsBox"
+    style="display:none;"
+  >
+
+    <div>
+      原始總筆數：
+      <span id="rawTotal">0</span>
+    </div>
+
+    <div>
+      過濾重複後有效名單：
+      <span id="validTotal">0</span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+   第二步：獎項與抽出名額設定
+   ===================================================== -->
+
+<div class="panel">
+
+  <div class="section-title">
+    獎項與抽出名額設定
+  </div>
+
+  <div class="grid-2">
+
+    <div class="form-group">
+
+      <label for="prizeName">
+        獎項名稱
+      </label>
+
+      <input
+        type="text"
+        id="prizeName"
+        placeholder="例如：頭獎、特獎"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="quotaInput">
+        預計抽出名額
+      </label>
+
+      <div style="
+        display:flex;
+        gap:8px;
+        align-items:center;
+      ">
+
+        <input
+          type="number"
+          id="quotaInput"
+          min="1"
+          step="1"
+          value="1"
+          placeholder="輸入抽出名額人數"
+        >
+
+        <span style="
+          color:var(--lg-blue);
+          font-weight:bold;
+          font-size:1.1rem;
+          white-space:nowrap;
+        ">
+          人
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <button
+    class="btn-action"
+    id="startDrawBtn"
+  >
+    ✨ 開始進行抽選 ✨
+  </button>
+
+</div>
+
+<!-- =====================================================
+   第三步：中獎結果展示
+   ===================================================== -->
+
+<div
+  class="result-container"
+  id="resultContainer"
+  style="display:none;"
+>
+
+  <div class="section-title">
+   抽獎結果公佈
+  </div>
+
+  <div
+    id="prizeTitleDisplay"
+    style="
+      font-size:1.05rem;
+      font-weight:bold;
+    "
+  ></div>
+
+  <div class="mask-control-panel">
+
+    <div class="mode-btn-group">
+
+      <button
+        type="button"
+        class="mode-btn active"
+        id="modeMaskedBtn"
+      >
+        🔒 遮蔽模式 (隱私保護)
+      </button>
+
+      <button
+        type="button"
+        class="mode-btn"
+        id="modeFullBtn"
+      >
+        👁️ 完整名單模式 (不遮蔽)
+      </button>
+
+    </div>
+
+    <div
+      class="sub-mask-group"
+      id="subMaskGroup"
+    >
+
+      <span style="color:var(--lg-muted);">
+        遮蔽項目：
+      </span>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="optMaskEmail"
+          checked
+        >
+        電子信箱
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="optMaskName"
+          checked
+        >
+        姓名
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="optMaskPhone"
+          checked
+        >
+        電話
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="optMaskId"
+          checked
+        >
+        身分證/證號
+      </label>
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          id="optMaskNhi"
+          checked
+        >
+        健保卡號
+      </label>
+
+    </div>
+
+  </div>
+
+  <div class="table-wrapper">
+
+    <table id="resultTable">
+
+      <thead>
+
+        <tr id="tableHeaderRow">
+          <!-- 動態生成表頭 -->
+        </tr>
+
+      </thead>
+
+      <tbody id="tableBodyRow">
+        <!-- 動態生成內容 -->
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="result-actions">
+
+    <button
+      class="btn-action btn-secondary"
+      id="copyWinnersBtn"
+    >
+      📋 一鍵複製抽出名單
+    </button>
+
+    <button
+      class="btn-action"
+      id="exportCsvBtn"
+    >
+      💾 一鍵匯出 CSV 檔案
+    </button>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+/* =========================================================
+  名單處理全域變數
+  ========================================================= */
+
+let rawData = [];
+let csvHeaders = [];
+let filteredData = [];
+let currentWinners = [];
+
+let phoneHeaderSet = new Set();
+let idOrNhiHeaderSet = new Set();
+
+let activeHeaders = [];
+let currentPrizeName = '';
+let currentMaskMode = 'masked';
+
+const GOOGLE_FORM_MEMORY_KEY = 'toyworld_google_form_memory_v13';
+const GOOGLE_FORM_MEMORY_LIMIT = 10;
+let activeDateFilter = { start: '', end: '' };
+
+/* =========================================================
+  字串正規化
+  ========================================================= */
+
+function normalizeStr(str) {
+
+  if (!str) return '';
+
+  return str
+    .toString()
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[\s\-_/\\()（）:：\[\]【】]/g, '');
+}
+
+/* =========================================================
+  關鍵字辨識
+  ========================================================= */
+
+const keywordMap = {
+
+  email: [
+    '信箱',
+    'email',
+    'e-mail',
+    '郵件',
+    '電子郵件',
+    'mail'
+  ],
+
+  name: [
+    '姓名',
+    '名字',
+    'name',
+    '真實姓名',
+    '收件人',
+    '得主',
+    '參加者',
+    '訂購人',
+    '買家',
+    '會員',
+    '聯絡人',
+    '連絡人'
+  ],
+
+  phone: [
+    '電話',
+    '手機',
+    'phone',
+    'mobile',
+    '聯絡電話',
+    '手機號碼',
+    'tel',
+    'cellphone',
+    '行動電話',
+    '電話號碼',
+    '聯絡人電話',
+    '簡訊',
+    '話號',
+    '連絡電話',
+    '連絡手機',
+    '聯絡手機',
+    'cell',
+    'ph',
+    '連絡號碼',
+    '聯絡號碼',
+    '通訊電話',
+    '聯絡資訊',
+    '連絡資訊',
+    '收件人電話',
+    '買家電話',
+    '會員電話',
+    '訂購人電話',
+    '客戶電話',
+    'contact'
+  ],
+
+  idOrNhi: [
+    '身分證',
+    '身份證',
+    '證件',
+    '證號',
+    '居留證',
+    'idnumber',
+    'idno',
+    'idcard',
+    'id',
+    '身分證號',
+    '身份證號',
+    '統一編號',
+    '統編',
+    '身分字號',
+    '身分證字',
+    'id編號',
+    '身分證字號',
+    '身份證字號',
+    '護照號碼',
+    '護照',
+    '健保卡',
+    '健保卡號',
+    '健保卡號碼',
+    '健保',
+    '健保卡字號',
+    '健保號碼',
+    'nhi',
+    'nhicard',
+    'nhi_no',
+    'nhino'
+  ]
+
+};
+
+/* =========================================================
+  GOOGLE FORM 匯入設定
+  ========================================================= */
+
+// 第一次使用前，只需把這裡填入「Google Form 讀取後端」的 Web App 網址。
+// 部署一次後，之後使用者只需要貼 Form 網址即可。
+const GOOGLE_FORM_API_URL =
+  '請填入你的 Apps Script Web App 網址';
+
+let googleFormRequestSeq = 0;
+
+function setGoogleFormStatus(message, type = '') {
+
+  const el =
+    document.getElementById('googleFormStatus');
+
+  if (!el) return;
+
+  el.textContent = message;
+  el.className =
+    'google-form-status' +
+    (type ? ' ' + type : '');
+}
+
+function isGoogleFormApiConfigured() {
+
+  return (
+    GOOGLE_FORM_API_URL &&
+    !GOOGLE_FORM_API_URL.startsWith('請填入')
+  );
+}
+
+function csvEscapeCell(value) {
+
+  const text =
+    value === null || value === undefined
+      ? ''
+      : String(value);
+
+  if (/[",\n\r]/.test(text)) {
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+
+  return text;
+}
+
+function googleFormPayloadToCSV(payload) {
+
+  const headers =
+    Array.isArray(payload.headers)
+      ? payload.headers
+      : [];
+
+  const rows =
+    Array.isArray(payload.rows)
+      ? payload.rows
+      : [];
+
+  const lines = [];
+
+  lines.push(
+    headers.map(csvEscapeCell).join(',')
+  );
+
+  rows.forEach(row => {
+
+    lines.push(
+      headers
+        .map(header =>
+          csvEscapeCell(
+            row && row[header] !== undefined
+              ? row[header]
+              : ''
+          )
+        )
+        .join(',')
+    );
+
+  });
+
+  return lines.join('\r\n');
+}
+
+function readGoogleFormMemory() {
+  try {
+    const data = JSON.parse(localStorage.getItem(GOOGLE_FORM_MEMORY_KEY) || '[]');
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeGoogleFormMemory(list) {
+  try {
+    localStorage.setItem(GOOGLE_FORM_MEMORY_KEY, JSON.stringify(list.slice(0, GOOGLE_FORM_MEMORY_LIMIT)));
+  } catch (e) {}
+}
+
+function rememberGoogleForm(url, title) {
+  const value = String(url || '').trim();
+  if (!value) return;
+  const list = readGoogleFormMemory().filter(item => item && item.url !== value);
+  list.unshift({ url: value, title: String(title || 'Google Form'), usedAt: Date.now() });
+  writeGoogleFormMemory(list);
+  renderGoogleFormMemory();
+}
+
+function renderGoogleFormMemory() {
+  const select = document.getElementById('googleFormMemorySelect');
+  if (!select) return;
+  const list = readGoogleFormMemory();
+  select.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = list.length ? '📚 選擇已記憶的 Google Form' : '📚 已記憶的表單（尚無記錄）';
+  select.appendChild(placeholder);
+  list.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.url;
+    option.textContent = `${item.title || 'Google Form'}｜${item.url}`;
+    select.appendChild(option);
+  });
+}
+
+function clearGoogleFormMemory() {
+  try { localStorage.removeItem(GOOGLE_FORM_MEMORY_KEY); } catch (e) {}
+  renderGoogleFormMemory();
+  setGoogleFormStatus('已清除已記憶的 Google Form。');
+}
+
+function initGoogleFormMemory() {
+  renderGoogleFormMemory();
+  const select = document.getElementById('googleFormMemorySelect');
+  if (select) {
+    select.addEventListener('change', function() {
+      if (this.value) document.getElementById('googleFormUrl').value = this.value;
+    });
+  }
+  const clear = document.getElementById('clearGoogleFormMemoryBtn');
+  if (clear) clear.addEventListener('click', clearGoogleFormMemory);
+}
+
+function loadGoogleFormData() {
+
+  const formUrl =
+    document
+      .getElementById('googleFormUrl')
+      .value
+      .trim();
+
+  if (!formUrl) {
+    setGoogleFormStatus(
+      '請先貼上 Google Form 網址。',
+      'error'
+    );
+    return;
+  }
+
+  if (!isGoogleFormApiConfigured()) {
+    setGoogleFormStatus(
+      '尚未設定 Google Form 讀取後端 Web App 網址。請先完成一次後端部署設定。',
+      'error'
+    );
+    return;
+  }
+
+  const button =
+    document.getElementById('loadGoogleFormBtn');
+
+  const requestId = ++googleFormRequestSeq;
+  const callbackName =
+    '__googleFormLotteryCallback_' +
+    Date.now() + '_' +
+    requestId;
+
+  const script =
+    document.createElement('script');
+
+  let finished = false;
+
+  const cleanup = () => {
+
+    finished = true;
+
+    try {
+      delete window[callbackName];
+    } catch (e) {
+      window[callbackName] = undefined;
+    }
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+    button.disabled = false;
+    button.textContent = '☁️ 讀取 Google Form';
+  };
+
+  const timer =
+    setTimeout(() => {
+
+      if (finished) return;
+
+      cleanup();
+      setGoogleFormStatus(
+        '讀取逾時，請確認 Web App 部署狀態與 Form 權限。',
+        'error'
+      );
+
+    }, 30000);
+
+  window[callbackName] = payload => {
+
+    if (finished) return;
+
+    clearTimeout(timer);
+
+    if (!payload || payload.ok !== true) {
+
+      const message =
+        payload && payload.message
+          ? payload.message
+          : 'Google Form 讀取失敗。';
+
+      cleanup();
+      setGoogleFormStatus(message, 'error');
+      return;
+    }
+
+    try {
+
+      const csvText =
+        googleFormPayloadToCSV(payload);
+
+      if (!payload.rows || payload.rows.length === 0) {
+        cleanup();
+        setGoogleFormStatus(
+          `「${payload.formTitle || 'Google Form'}」目前沒有回覆資料。`,
+          'error'
+        );
+        return;
+      }
+
+      // 關鍵：轉成既有 CSV 格式，再交給原本 parseCSV()。
+      // 因此原有欄位辨識、重複過濾、抽獎邏輯全部維持不變。
+      document.getElementById('csvFile').value = '';
+      document.getElementById('pasteArea').value = '';
+      document.getElementById('fileLabel').textContent =
+        '📁 點擊此處選擇 CSV 檔案';
+
+      parseCSV(csvText);
+
+      cleanup();
+
+      const count =
+        Number.isFinite(payload.responseCount)
+          ? payload.responseCount
+          : payload.rows.length;
+
+      const timeText =
+        payload.fetchedAt
+          ? new Date(payload.fetchedAt).toLocaleString('zh-TW')
+          : '';
+
+      rememberGoogleForm(formUrl, payload.formTitle || 'Google Form');
+
+      setGoogleFormStatus(
+        `✓ 已載入「${payload.formTitle || 'Google Form'}」｜回覆 ${count} 筆${timeText ? '｜同步：' + timeText : ''}`,
+        'success'
+      );
+
+    } catch (err) {
+
+      cleanup();
+      setGoogleFormStatus(
+        'Google Form 資料已取得，但匯入抽獎名單時發生錯誤：' +
+        (err.message || err),
+        'error'
+      );
+    }
+  };
+
+  script.onerror = () => {
+
+    if (finished) return;
+
+    clearTimeout(timer);
+    cleanup();
+    setGoogleFormStatus(
+      '無法連線到 Google Form 讀取後端，請確認 Web App 網址是否正確。',
+      'error'
+    );
+  };
+
+  button.disabled = true;
+  button.textContent = '⏳ 讀取中...';
+  setGoogleFormStatus(
+    '正在讀取 Google Form 回覆資料，請稍候…'
+  );
+
+  const separator =
+    GOOGLE_FORM_API_URL.includes('?') ? '&' : '?';
+
+  script.src =
+    GOOGLE_FORM_API_URL +
+    separator +
+    'formUrl=' + encodeURIComponent(formUrl) +
+    '&callback=' + encodeURIComponent(callbackName);
+
+  document.body.appendChild(script);
+}
+
+document
+  .getElementById('loadGoogleFormBtn')
+  .addEventListener(
+    'click',
+    loadGoogleFormData
+  );
+
+initGoogleFormMemory();
+
+document.getElementById('applyDateFilterBtn').addEventListener('click', function() {
+  const start = document.getElementById('dateFilterStart').value;
+  const end = document.getElementById('dateFilterEnd').value;
+  if (start && end && start > end) {
+    setGoogleFormStatus('日期篩選的開始日期不能晚於結束日期。', 'error');
+    return;
+  }
+  activeDateFilter = { start, end };
+  updateDateFilterStatus();
+  processFilteredData();
+});
+
+document.getElementById('clearDateFilterBtn').addEventListener('click', function() {
+  document.getElementById('dateFilterStart').value = '';
+  document.getElementById('dateFilterEnd').value = '';
+  activeDateFilter = { start: '', end: '' };
+  updateDateFilterStatus();
+  processFilteredData();
+});
+
+updateDateFilterStatus();
+
+/* =========================================================
+  CSV 上傳
+  ========================================================= */
+
+document
+  .getElementById('csvFile')
+  .addEventListener('change', function(e) {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    document.getElementById('fileLabel').textContent =
+      `📁 已選擇檔案：${file.name}`;
+
+    document.getElementById('pasteArea').value = '';
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+
+      let text = event.target.result;
+
+      if (text.includes('\uFFFD')) {
+
+        const big5Reader = new FileReader();
+
+        big5Reader.onload = function(b5Event) {
+          parseCSV(b5Event.target.result);
+        };
+
+        big5Reader.readAsText(file, 'big5');
+
+      } else {
+
+        parseCSV(text);
+
+      }
+    };
+
+    reader.readAsText(file, 'UTF-8');
+
+  });
+
+/* =========================================================
+  一鍵貼上
+  ========================================================= */
+
+document
+  .getElementById('quickPasteBtn')
+  .addEventListener('click', async function() {
+
+    try {
+
+      if (
+        !navigator.clipboard ||
+        !navigator.clipboard.readText
+      ) {
+
+        alert(
+          '您的瀏覽器不支援自動讀取剪貼簿，請使用快捷鍵 (Ctrl+V / Cmd+V) 手動貼上！'
+        );
+
+        return;
+      }
+
+      const text =
+        await navigator.clipboard.readText();
+
+      if (!text || !text.trim()) {
+
+        alert(
+          '剪貼簿中沒有可貼上的文字內容！'
+        );
+
+        return;
+      }
+
+      document.getElementById('pasteArea').value =
+        text;
+
+    } catch (err) {
+
+      alert(
+        '讀取剪貼簿失敗，請確認已授權瀏覽器存取剪貼簿權限！'
+      );
+
+    }
+
+  });
+
+/* =========================================================
+  清除
+  ========================================================= */
+
+document
+  .getElementById('clearPasteBtn')
+  .addEventListener('click', function() {
+
+    document.getElementById('pasteArea').value = '';
+
+  });
+
+/* =========================================================
+  分析貼上名單
+  ========================================================= */
+
+document
+  .getElementById('parsePasteBtn')
+  .addEventListener('click', function() {
+
+    const pasteText =
+      document.getElementById('pasteArea').value.trim();
+
+    if (!pasteText) {
+
+      alert(
+        '請先在輸入框內貼上您的名單！'
+      );
+
+      return;
+    }
+
+    document.getElementById('csvFile').value = '';
+
+    document.getElementById('fileLabel').textContent =
+      '📁 點擊此處選擇 CSV 檔案';
+
+    parseCSV(pasteText);
+
+    alert('名單已成功分析！');
+
+  });
+
+/* =========================================================
+  RFC 4180 CSV 解析器
+  ========================================================= */
+
+function parseFullCSV(text) {
+
+  if (!text) {
+    return {
+      headers: [],
+      rows: []
+    };
+  }
+
+  text = text.replace(/^\uFEFF/, '');
+
+  let firstLine =
+    text.split(/\r\n|\n/)[0] || '';
+
+  let commaCount =
+    (firstLine.match(/,/g) || []).length;
+
+  let tabCount =
+    (firstLine.match(/\t/g) || []).length;
+
+  let semiCount =
+    (firstLine.match(/;/g) || []).length;
+
+  let delimiter = ',';
+
+  if (
+    tabCount > commaCount &&
+    tabCount > semiCount
+  ) {
+
+    delimiter = '\t';
+
+  } else if (
+    semiCount > commaCount &&
+    semiCount > tabCount
+  ) {
+
+    delimiter = ';';
+
+  }
+
+  let arr = [];
+  let row = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+
+    let char = text[i];
+    let nextChar = text[i + 1];
+
+    if (char === '"') {
+
+      if (
+        inQuotes &&
+        nextChar === '"'
+      ) {
+
+        current += '"';
+        i++;
+
+      } else {
+
+        inQuotes = !inQuotes;
+
+      }
+
+    } else if (
+      char === delimiter &&
+      !inQuotes
+    ) {
+
+      row.push(current.trim());
+      current = '';
+
+    } else if (
+      (char === '\r' || char === '\n') &&
+      !inQuotes
+    ) {
+
+      if (
+        char === '\r' &&
+        nextChar === '\n'
+      ) {
+        i++;
+      }
+
+      row.push(current.trim());
+
+      if (
+        row.some(
+          cell => cell.length > 0
+        )
+      ) {
+        arr.push(row);
+      }
+
+      row = [];
+      current = '';
+
+    } else {
+
+      current += char;
+
+    }
+  }
+
+  if (
+    current ||
+    row.length > 0
+  ) {
+
+    row.push(current.trim());
+
+    if (
+      row.some(
+        cell => cell.length > 0
+      )
+    ) {
+      arr.push(row);
+    }
+  }
+
+  if (arr.length === 0) {
+
+    return {
+      headers: [],
+      rows: []
+    };
+  }
+
+  let cleanedArr =
+    arr.map(
+      r =>
+        r.map(
+          cell =>
+            cell
+              .replace(/^"|"$/g, '')
+              .trim()
+        )
+    );
+
+  let headers = cleanedArr[0];
+  let rows = cleanedArr.slice(1);
+
+  return {
+    headers,
+    rows
+  };
+}
+
+/* =========================================================
+  健保卡判斷
+  ========================================================= */
+
+function isNhiValue(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return false;
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .trim();
+
+  if (!str) return false;
+
+  if (
+    str.includes('@') ||
+    /[a-zA-Z\u4e00-\u9fa5]/.test(str)
+  ) {
+    return false;
+  }
+
+  let digits =
+    str.replace(/\D/g, '');
+
+  if (
+    digits.length === 12 &&
+    !digits.startsWith('886')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/* =========================================================
+  身分證判斷
+  ========================================================= */
+
+function isIdValue(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return false;
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .trim();
+
+  if (!str) return false;
+
+  if (str.includes('@')) return false;
+
+  let clean =
+    str.toUpperCase();
+
+  if (
+    /^[A-Z][12]\d$/.test(clean)
+  ) {
+    return true;
+  }
+
+  if (
+    /^[A-Z][12][0-9*]$/.test(clean)
+  ) {
+    return true;
+  }
+
+  if (
+    clean.length === 10 &&
+    /^[A-Z][1289A-Z]/.test(clean)
+  ) {
+
+    let digitCount =
+      (
+        clean.match(/[\d*]/g) || []
+      ).length;
+
+    if (digitCount >= 8) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/* =========================================================
+  ID / NHI 解析
+  ========================================================= */
+
+function parseIdOrNhiCell(val) {
+
+  if (!val) {
+    return {
+      type: 'unknown',
+      formatted: ''
+    };
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .trim();
+
+  if (!str) {
+    return {
+      type: 'unknown',
+      formatted: ''
+    };
+  }
+
+  if (str.includes('@')) {
+    return {
+      type: 'unknown',
+      formatted: str
+    };
+  }
+
+  let upper =
+    str.toUpperCase();
+
+  let isExplicitNhi =
+    /健保卡|NHI/i.test(str);
+
+  let isExplicitId =
+    /身分證|身份證|證號|ID|居留證|統編/i.test(str);
+
+  let parts =
+    str.split(/[:：\-\s]+/);
+
+  if (parts.length > 1) {
+
+    for (let p of parts) {
+
+      let pClean =
+        p.trim().toUpperCase();
+
+      if (isIdValue(pClean)) {
+
+        return {
+          type: 'id',
+          formatted:
+            formatIdNumber(pClean)
+        };
+      }
+
+      if (isNhiValue(p)) {
+
+        return {
+          type: 'nhi',
+          formatted:
+            formatNhiNumber(p)
+        };
+      }
+    }
+  }
+
+  if (
+    isExplicitNhi ||
+    isNhiValue(str)
+  ) {
+
+    return {
+      type: 'nhi',
+      formatted:
+        formatNhiNumber(str)
+    };
+  }
+
+  if (
+    isExplicitId ||
+    isIdValue(upper)
+  ) {
+
+    return {
+      type: 'id',
+      formatted:
+        formatIdNumber(upper)
+    };
+  }
+
+  if (isNhiValue(str)) {
+
+    return {
+      type: 'nhi',
+      formatted:
+        formatNhiNumber(str)
+    };
+  }
+
+  if (isIdValue(upper)) {
+
+    return {
+      type: 'id',
+      formatted:
+        formatIdNumber(upper)
+    };
+  }
+
+  return {
+    type: 'unknown',
+    formatted: str
+  };
+}
+
+/* =========================================================
+  健保卡格式
+  ========================================================= */
+
+function formatNhiNumber(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return '';
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .replace(/\.0+$/, '')
+      .trim();
+
+  let digits =
+    str.replace(/\D/g, '');
+
+  if (digits.length === 12) {
+    return digits;
+  }
+
+  return str;
+}
+
+/* =========================================================
+  身分證格式
+  ========================================================= */
+
+function formatIdNumber(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return '';
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .trim();
+
+  return str.toUpperCase();
+}
+
+/* =========================================================
+  健保卡遮蔽
+  ========================================================= */
+
+function maskNhiNumber(nhiStr) {
+
+  if (!nhiStr) return '';
+
+  let cleaned =
+    formatNhiNumber(nhiStr);
+
+  let digits =
+    cleaned.replace(/\D/g, '');
+
+  if (digits.length === 12) {
+
+    return (
+      '********' +
+      digits.substring(8)
+    );
+
+  } else if (cleaned.length >= 5) {
+
+    let tail =
+      cleaned.substring(
+        cleaned.length - 4
+      );
+
+    let maskLen =
+      cleaned.length - 4;
+
+    return (
+      '*'.repeat(maskLen) +
+      tail
+    );
+  }
+
+  return cleaned;
+}
+
+/* =========================================================
+  身分證遮蔽
+  ========================================================= */
+
+function maskIdNumber(idStr) {
+
+  if (!idStr) return '';
+
+  let cleaned =
+    formatIdNumber(idStr);
+
+  if (cleaned.length === 10) {
+
+    return (
+      cleaned.substring(0, 2) +
+      '****' +
+      cleaned.substring(6)
+    );
+  }
+
+  if (cleaned.length >= 7) {
+
+    let head =
+      cleaned.substring(0, 2);
+
+    let tail =
+      cleaned.substring(
+        cleaned.length - 4
+      );
+
+    let maskLen =
+      cleaned.length - 6;
+
+    return (
+      head +
+      '*'.repeat(
+        maskLen > 0
+          ? maskLen
+          : 4
+      ) +
+      tail
+    );
+  }
+
+  return cleaned;
+}
+
+/* =========================================================
+  Email 遮蔽
+  ========================================================= */
+
+function maskEmail(emailStr) {
+
+  if (
+    !emailStr ||
+    !emailStr.includes('@')
+  ) {
+    return emailStr;
+  }
+
+  let parts =
+    emailStr
+      .trim()
+      .split('@');
+
+  let user = parts[0];
+  let domain = parts[1];
+
+  if (user.length <= 2) {
+
+    user =
+      user.charAt(0) + '*';
+
+  } else {
+
+    user =
+      user.substring(0, 2) +
+      '***';
+  }
+
+  return user + '@' + domain;
+}
+
+/* =========================================================
+  電話遮蔽
+  ========================================================= */
+
+function maskPhoneNumber(phoneStr) {
+
+  if (!phoneStr) return '';
+
+  let cleaned =
+    formatPhoneNumber(phoneStr);
+
+  if (cleaned.length === 10) {
+
+    return (
+      cleaned.substring(0, 4) +
+      '***' +
+      cleaned.substring(7)
+    );
+  }
+
+  if (cleaned.length >= 7) {
+
+    let head =
+      cleaned.substring(0, 3);
+
+    let tail =
+      cleaned.substring(
+        cleaned.length - 3
+      );
+
+    let maskLen =
+      cleaned.length - 6;
+
+    return (
+      head +
+      '*'.repeat(
+        maskLen > 0
+          ? maskLen
+          : 3
+      ) +
+      tail
+    );
+  }
+
+  return cleaned;
+}
+
+/* =========================================================
+  姓名遮蔽
+  ========================================================= */
+
+function maskName(nameStr) {
+
+  if (!nameStr) return '';
+
+  let chars =
+    Array.from(nameStr.trim());
+
+  let len = chars.length;
+
+  if (len <= 1) {
+
+    return chars.join('');
+
+  } else if (len === 2) {
+
+    return chars[0] + '○';
+
+  } else if (len === 3) {
+
+    return (
+      chars[0] +
+      '○' +
+      chars[2]
+    );
+
+  } else {
+
+    let first = chars[0];
+
+    let last =
+      chars[len - 1];
+
+    return (
+      first +
+      '○'.repeat(len - 2) +
+      last
+    );
+  }
+}
+
+/* =========================================================
+  電話格式
+  ========================================================= */
+
+function formatPhoneNumber(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return '';
+  }
+
+  let str =
+    val.toString().trim();
+
+  if (!str) return '';
+
+  if (
+    str.includes('@') ||
+    /[a-zA-Z\u4e00-\u9fa5]/.test(str)
+  ) {
+    return str;
+  }
+
+  let cleanStr =
+    str
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .replace(/\.0+$/, '')
+      .trim();
+
+  let digits =
+    cleanStr.replace(/\D/g, '');
+
+  if (!digits) return str;
+
+  if (
+    digits.startsWith('886') &&
+    (
+      digits.length === 11 ||
+      digits.length === 12
+    )
+  ) {
+
+    return (
+      '0' +
+      digits.substring(3)
+    );
+  }
+
+  if (
+    digits.length === 9 &&
+    /^[2-9]/.test(digits)
+  ) {
+
+    return '0' + digits;
+  }
+
+  if (
+    digits.length === 8 &&
+    /^[2-8]/.test(digits)
+  ) {
+
+    return '0' + digits;
+  }
+
+  if (
+    digits.length === 10 &&
+    digits.startsWith('0')
+  ) {
+
+    return digits;
+  }
+
+  return cleanStr || str;
+}
+
+/* =========================================================
+  欄位辨識
+  ========================================================= */
+
+function isEmailField(headerName) {
+
+  if (!headerName) return false;
+
+  let norm =
+    normalizeStr(headerName);
+
+  return keywordMap.email.some(
+    kw =>
+      norm.includes(
+        normalizeStr(kw)
+      )
+  );
+}
+
+function isPhoneField(headerName) {
+
+  if (!headerName) return false;
+
+  let norm =
+    normalizeStr(headerName);
+
+  return keywordMap.phone.some(
+    kw =>
+      norm.includes(
+        normalizeStr(kw)
+      )
+  );
+}
+
+function isIdOrNhiField(headerName) {
+
+  if (!headerName) return false;
+
+  let norm =
+    normalizeStr(headerName);
+
+  return keywordMap.idOrNhi.some(
+    kw =>
+      norm.includes(
+        normalizeStr(kw)
+      )
+  );
+}
+
+function isNameField(headerName) {
+
+  if (!headerName) return false;
+
+  let norm =
+    normalizeStr(headerName);
+
+  return (
+    keywordMap.name.some(
+      kw =>
+        norm.includes(
+          normalizeStr(kw)
+        )
+    ) &&
+    !isEmailField(headerName)
+  );
+}
+
+/* =========================================================
+  CSV 主要處理
+  ========================================================= */
+
+function parseCSV(text) {
+
+  if (!text) return;
+
+  const {
+    headers,
+    rows
+  } = parseFullCSV(text);
+
+  if (headers.length === 0) return;
+
+  csvHeaders = headers;
+
+  rawData = [];
+
+  phoneHeaderSet = new Set();
+  idOrNhiHeaderSet = new Set();
+
+  headers.forEach(
+    (h, colIndex) => {
+
+      if (isEmailField(h)) return;
+
+      if (isIdOrNhiField(h)) {
+        idOrNhiHeaderSet.add(h);
+      }
+
+      if (isPhoneField(h)) {
+        phoneHeaderSet.add(h);
+      }
+
+      let matchCount = 0;
+      let sampleCount = 0;
+
+      for (
+        let r = 0;
+        r < Math.min(rows.length, 20);
+        r++
+      ) {
+
+        let val =
+          rows[r][colIndex];
+
+        if (
+          val &&
+          val.trim()
+        ) {
+
+          sampleCount++;
+
+          let parsed =
+            parseIdOrNhiCell(val);
+
+          if (
+            parsed.type !== 'unknown'
+          ) {
+            matchCount++;
+          }
+        }
+      }
+
+      if (
+        sampleCount > 0 &&
+        (
+          matchCount /
+          sampleCount
+        ) >= 0.4
+      ) {
+
+        idOrNhiHeaderSet.add(h);
+      }
+    }
+  );
+
+  rows.forEach(
+    (rowValues, rowIndex) => {
+
+      let rowObj = {
+        _originalIndex:
+          rowIndex + 1
+      };
+
+      csvHeaders.forEach(
+        (header, colIndex) => {
+
+          let val =
+            rowValues[colIndex] !== undefined
+              ? rowValues[colIndex].trim()
+              : '';
+
+          if (
+            isEmailField(header) ||
+            val.includes('@')
+          ) {
+
+            // 保留原始格式
+
+          } else if (
+            idOrNhiHeaderSet.has(header) ||
+            isIdOrNhiField(header) ||
+            isIdValue(val) ||
+            isNhiValue(val)
+          ) {
+
+            let parsed =
+              parseIdOrNhiCell(val);
+
+            val =
+              parsed.formatted;
+
+          } else if (
+            phoneHeaderSet.has(header) ||
+            isPhoneValue(val)
+          ) {
+
+            val =
+              formatPhoneNumber(val);
+          }
+
+          rowObj[header] = val;
+        }
+      );
+
+      rawData.push(rowObj);
+    }
+  );
+
+  processFilteredData();
+
+  document.getElementById(
+    'statsBox'
+  ).style.display = 'flex';
+
+  document.getElementById(
+    'rawTotal'
+  ).textContent = rawData.length;
+}
+
+/* =========================================================
+  電話數值辨識
+  ========================================================= */
+
+function isPhoneValue(val) {
+
+  if (
+    val === null ||
+    val === undefined
+  ) {
+    return false;
+  }
+
+  let str =
+    val.toString()
+      .trim()
+      .replace(/^="?|"?$/g, '')
+      .replace(/^'/, '')
+      .replace(/\.0+$/, '')
+      .trim();
+
+  if (
+    !str ||
+    str.includes('@') ||
+    /[a-zA-Z\u4e00-\u9fa5]/.test(str)
+  ) {
+    return false;
+  }
+
+  let digits =
+    str.replace(/\D/g, '');
+
+  if (
+    digits.length === 10 &&
+    /^0[2-9]/.test(digits)
+  ) {
+    return true;
+  }
+
+  if (
+    digits.length === 9 &&
+    /^[2-9]/.test(digits)
+  ) {
+    return true;
+  }
+
+  if (
+    digits.length === 8 &&
+    /^[2-8]/.test(digits)
+  ) {
+    return true;
+  }
+
+  if (
+    (
+      digits.length === 11 ||
+      digits.length === 12
+    ) &&
+    digits.startsWith('886')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/* =========================================================
+  欄位識別
+  ========================================================= */
+
+function identifyFields(row) {
+
+  let identified = {
+    email: '',
+    name: '',
+    phone: '',
+    idOrNhi: ''
+  };
+
+  Object.keys(row).forEach(
+    key => {
+
+      if (key === '_originalIndex') {
+        return;
+      }
+
+      if (
+        !identified.email &&
+        (
+          isEmailField(key) ||
+          (
+            row[key] &&
+            row[key].includes('@')
+          )
+        )
+      ) {
+
+        identified.email = key;
+      }
+
+      if (
+        !identified.name &&
+        isNameField(key)
+      ) {
+
+        identified.name = key;
+      }
+
+      if (
+        !identified.idOrNhi &&
+        idOrNhiHeaderSet.has(key)
+      ) {
+
+        identified.idOrNhi = key;
+      }
+
+      if (
+        !identified.phone &&
+        key !== identified.email &&
+        key !== identified.idOrNhi &&
+        (
+          phoneHeaderSet.has(key) ||
+          isPhoneField(key)
+        )
+      ) {
+
+        identified.phone = key;
+      }
+    }
+  );
+
+  if (!identified.idOrNhi) {
+
+    Object.keys(row).forEach(
+      key => {
+
+        if (
+          key === '_originalIndex' ||
+          key === identified.email ||
+          key === identified.phone
+        ) {
+          return;
+        }
+
+        let parsed =
+          parseIdOrNhiCell(row[key]);
+
+        if (
+          parsed.type === 'id' ||
+          parsed.type === 'nhi'
+        ) {
+
+          identified.idOrNhi = key;
+        }
+      }
+    );
+  }
+
+  return identified;
+}
+
+/* =========================================================
+  日期篩選
+  ========================================================= */
+
+function getSubmissionTimestamp_(row) {
+  if (!row || typeof row !== 'object') return '';
+
+  const header = Object.keys(row).find(key =>
+    normalizeStr(key) === normalizeStr('提交時間') ||
+    normalizeStr(key) === normalizeStr('時間戳記') ||
+    normalizeStr(key) === normalizeStr('timestamp') ||
+    normalizeStr(key) === normalizeStr('timestamp')
+  );
+
+  return header ? String(row[header] || '').trim() : '';
+}
+
+function parseSubmissionDate_(value) {
+  if (!value) return NaN;
+  const d = new Date(value);
+  if (!Number.isNaN(d.getTime())) return d.getTime();
+
+  const m = String(value).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (!m) return NaN;
+  return new Date(
+    Number(m[1]), Number(m[2]) - 1, Number(m[3]),
+    Number(m[4] || 0), Number(m[5] || 0), Number(m[6] || 0)
+  ).getTime();
+}
+
+function applyDateFilter(rows) {
+  const start = activeDateFilter.start;
+  const end = activeDateFilter.end;
+  if (!start && !end) return rows;
+
+  const startTime = start ? new Date(start + 'T00:00:00').getTime() : -Infinity;
+  const endTime = end ? new Date(end + 'T23:59:59.999').getTime() : Infinity;
+
+  return rows.filter(row => {
+    const value = getSubmissionTimestamp_(row);
+    const time = parseSubmissionDate_(value);
+    return !Number.isNaN(time) && time >= startTime && time <= endTime;
+  });
+}
+
+function updateDateFilterStatus() {
+  const el = document.getElementById('dateFilterStatus');
+  if (!el) return;
+  if (!activeDateFilter.start && !activeDateFilter.end) {
+    el.textContent = '未啟用日期篩選';
+    return;
+  }
+  const start = activeDateFilter.start || '不限';
+  const end = activeDateFilter.end || '不限';
+  el.textContent = `已啟用：${start} ～ ${end}｜目前有效名單會先依日期篩選，再套用重複過濾。`;
+}
+
+/* =========================================================
+  重複過濾
+  ========================================================= */
+
+function processFilteredData() {
+
+  const sourceData = applyDateFilter(rawData);
+
+  const checkEmail =
+    document.getElementById(
+      'chkEmail'
+    ).checked;
+
+  const checkName =
+    document.getElementById(
+      'chkName'
+    ).checked;
+
+  const checkPhone =
+    document.getElementById(
+      'chkPhone'
+    ).checked;
+
+  const checkId =
+    document.getElementById(
+      'chkId'
+    ).checked;
+
+  const checkNhi =
+    document.getElementById(
+      'chkNhi'
+    ).checked;
+
+  if (
+    !checkEmail &&
+    !checkName &&
+    !checkPhone &&
+    !checkId &&
+    !checkNhi
+  ) {
+
+    filteredData = [...sourceData];
+
+  } else {
+
+    let seen = new Set();
+
+    filteredData =
+      sourceData.filter(
+        row => {
+
+          let fields =
+            identifyFields(row);
+
+          let uniqueKeyParts = [];
+
+          if (
+            checkEmail &&
+            fields.email &&
+            row[fields.email]
+          ) {
+
+            uniqueKeyParts.push(
+              row[fields.email]
+                .trim()
+                .toLowerCase()
+            );
+          }
+
+          if (
+            checkName &&
+            fields.name &&
+            row[fields.name]
+          ) {
+
+            uniqueKeyParts.push(
+              row[fields.name]
+                .trim()
+                .toLowerCase()
+            );
+          }
+
+          if (
+            checkPhone &&
+            fields.phone &&
+            row[fields.phone]
+          ) {
+
+            uniqueKeyParts.push(
+              formatPhoneNumber(
+                row[fields.phone]
+              )
+            );
+          }
+
+          if (
+            (checkId || checkNhi) &&
+            fields.idOrNhi &&
+            row[fields.idOrNhi]
+          ) {
+
+            let parsed =
+              parseIdOrNhiCell(
+                row[fields.idOrNhi]
+              );
+
+            uniqueKeyParts.push(
+              parsed.formatted ||
+              row[fields.idOrNhi]
+                .trim()
+                .toUpperCase()
+            );
+          }
+
+          if (
+            uniqueKeyParts.length === 0
+          ) {
+            return true;
+          }
+
+          let uniqueString =
+            uniqueKeyParts.join('_|_');
+
+          if (seen.has(uniqueString)) {
+
+            return false;
+
+          } else {
+
+            seen.add(uniqueString);
+
+            return true;
+          }
+        }
+      );
+  }
+
+  filteredData.sort(
+    (a, b) =>
+      a._originalIndex -
+      b._originalIndex
+  );
+
+  document.getElementById(
+    'validTotal'
+  ).textContent =
+    filteredData.length;
+}
+
+/* =========================================================
+  重複條件即時更新
+  ========================================================= */
+
+[
+  'chkEmail',
+  'chkName',
+  'chkPhone',
+  'chkId',
+  'chkNhi'
+].forEach(
+  id => {
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        'change',
+        processFilteredData
+      );
+  }
+);
+
+/* =========================================================
+  顯示格式 / 隱私遮蔽
+  ========================================================= */
+
+function getFormattedValue(
+  header,
+  rawVal
+) {
+
+  if (!rawVal) return '';
+
+  let val =
+    rawVal.toString().trim();
+
+  const maskEmailOpt =
+    document.getElementById(
+      'optMaskEmail'
+    ).checked;
+
+  const maskNameOpt =
+    document.getElementById(
+      'optMaskName'
+    ).checked;
+
+  const maskPhoneOpt =
+    document.getElementById(
+      'optMaskPhone'
+    ).checked;
+
+  const maskIdOpt =
+    document.getElementById(
+      'optMaskId'
+    ).checked;
+
+  const maskNhiOpt =
+    document.getElementById(
+      'optMaskNhi'
+    ).checked;
+
+  const isEmail =
+    isEmailField(header) ||
+    val.includes('@');
+
+  const isPhone =
+    !isEmail &&
+    (
+      phoneHeaderSet.has(header) ||
+      isPhoneField(header) ||
+      isPhoneValue(val)
+    );
+
+  const isName =
+    !isEmail &&
+    !isPhone &&
+    isNameField(header);
+
+  const isIdOrNhiCol =
+    idOrNhiHeaderSet.has(header) ||
+    isIdOrNhiField(header);
+
+  /* 完整名單模式：
+    不論是 Email、姓名、電話、身分證或健保卡，
+    一律直接回傳完整資料，不受個別遮蔽勾選狀態影響。 */
+  if (currentMaskMode === 'full') {
+    if (isEmail) {
+      return val;
+    }
+
+    if (isPhone) {
+      return formatPhoneNumber(val);
+    }
+
+    if (isName) {
+      return val;
+    }
+  }
+
+  if (isEmail) {
+
+    return maskEmailOpt
+      ? maskEmail(val)
+      : val;
+  }
+
+  if (isPhone) {
+
+    let formatted =
+      formatPhoneNumber(val);
+
+    return maskPhoneOpt
+      ? maskPhoneNumber(formatted)
+      : formatted;
+  }
+
+  if (isName) {
+
+    return maskNameOpt
+      ? maskName(val)
+      : val;
+  }
+
+  if (
+    isIdOrNhiCol ||
+    isIdValue(val) ||
+    isNhiValue(val)
+  ) {
+
+    let parsed =
+      parseIdOrNhiCell(val);
+
+    let formatted =
+      parsed.formatted || val;
+
+    if (currentMaskMode === 'full') {
+
+      return formatted;
+    }
+
+    if (parsed.type === 'nhi') {
+
+      return maskNhiOpt
+        ? maskNhiNumber(formatted)
+        : formatted;
+
+    } else if (parsed.type === 'id') {
+
+      return maskIdOpt
+        ? maskIdNumber(formatted)
+        : formatted;
+
+    } else {
+
+      if (isNhiValue(formatted)) {
+
+        return maskNhiOpt
+          ? maskNhiNumber(formatted)
+          : formatted;
+
+      } else {
+
+        return maskIdOpt
+          ? maskIdNumber(formatted)
+          : formatted;
+      }
+    }
+  }
+
+  return val;
+}
+
+/* =========================================================
+  Render Table
+  ========================================================= */
+
+function renderResultsTable() {
+
+  if (
+    !currentWinners ||
+    currentWinners.length === 0
+  ) {
+    return;
+  }
+
+  const headerRow =
+    document.getElementById(
+      'tableHeaderRow'
+    );
+
+  const bodyRow =
+    document.getElementById(
+      'tableBodyRow'
+    );
+
+  let headerHtml =
+    `<th>序號 (填寫先後)</th>`;
+
+  activeHeaders.forEach(
+    h => {
+
+      headerHtml +=
+        `<th>${escapeHtml(h)}</th>`;
+    }
+  );
+
+  headerRow.innerHTML =
+    headerHtml;
+
+  let bodyHtml = '';
+
+  currentWinners.forEach(
+    winner => {
+
+      bodyHtml += `<tr>`;
+
+      bodyHtml +=
+        `<td><span class="badge"># ${winner._originalIndex}</span></td>`;
+
+      activeHeaders.forEach(
+        h => {
+
+          let cellVal =
+            winner[h] || '';
+
+          let formattedVal =
+            getFormattedValue(
+              h,
+              cellVal
+            );
+
+          bodyHtml +=
+            `<td>${escapeHtml(formattedVal)}</td>`;
+        }
+      );
+
+      bodyHtml += `</tr>`;
+    }
+  );
+
+  bodyRow.innerHTML =
+    bodyHtml;
+}
+
+/* =========================================================
+  HTML Escape
+  ========================================================= */
+
+function escapeHtml(str) {
+
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* =========================================================
+  開始抽選
+  ========================================================= */
+
+document
+  .getElementById('startDrawBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      if (filteredData.length === 0) {
+
+        alert(
+          '目前沒有有效的抽獎名單，請先載入 Google Form、上傳 CSV 檔案或貼上名單！'
+        );
+
+        return;
+      }
+
+      currentPrizeName =
+        document
+          .getElementById(
+            'prizeName'
+          )
+          .value
+          .trim() ||
+        '精選大獎';
+
+      const quota =
+        parseInt(
+          document.getElementById(
+            'quotaInput'
+          ).value,
+          10
+        );
+
+      if (
+        isNaN(quota) ||
+        quota <= 0
+      ) {
+
+        alert(
+          '請輸入有效的抽出名額（需大於 0 位）！'
+        );
+
+        return;
+      }
+
+      currentWinners = [];
+
+      let targetCount =
+        Math.min(
+          quota,
+          filteredData.length
+        );
+
+      let shuffled =
+        [...filteredData];
+
+      for (
+        let i = shuffled.length - 1;
+        i > 0;
+        i--
+      ) {
+
+        let j =
+          Math.floor(
+            Math.random() *
+            (i + 1)
+          );
+
+        [
+          shuffled[i],
+          shuffled[j]
+        ] = [
+          shuffled[j],
+          shuffled[i]
+        ];
+      }
+
+      currentWinners =
+        shuffled.slice(
+          0,
+          targetCount
+        );
+
+      currentWinners.sort(
+        (a, b) =>
+          a._originalIndex -
+          b._originalIndex
+      );
+
+      const container =
+        document.getElementById(
+          'resultContainer'
+        );
+
+      const titleDisplay =
+        document.getElementById(
+          'prizeTitleDisplay'
+        );
+
+      container.style.display =
+        'block';
+
+      // 修正原先無法正常取得與顯示變數數值的 Template 字串語法
+      titleDisplay.textContent =
+        `🎁 獎項：${currentPrizeName} ｜ 設定抽出名額：${quota} 位 ｜ 幸運抽出得主：共 ${currentWinners.length} 位`;
+
+      activeHeaders =
+        csvHeaders.filter(
+          h => {
+
+            let lower =
+              h.toLowerCase();
+
+            return (
+              !lower.includes('時間') &&
+              !lower.includes('日期') &&
+              !lower.includes('time') &&
+              !lower.includes('date')
+            );
+          }
+        );
+
+      if (
+        activeHeaders.length === 0
+      ) {
+
+        activeHeaders =
+          [...csvHeaders];
+      }
+
+      renderResultsTable();
+
+      /* V1.3.5：桌面版依結果區與視窗高度計算定位，讓結果立即可見並保留上方操作區。 */
+      if (window.innerWidth > 768) {
+        requestAnimationFrame(() => {
+          const resultRect=container.getBoundingClientRect();
+          const viewportH=window.innerHeight;
+          const topReserve=Math.min(180, Math.max(96, viewportH*0.16));
+          const visibleBottom=viewportH-24;
+          if(resultRect.top < topReserve || resultRect.bottom > visibleBottom){
+            const target=Math.max(0, window.scrollY + resultRect.top - topReserve);
+            window.scrollTo({top:target,behavior:'smooth'});
+          }
+        });
+      }
+    }
+  );
+
+/* =========================================================
+  遮蔽模式
+  ========================================================= */
+
+document
+  .getElementById('modeMaskedBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      currentMaskMode =
+        'masked';
+
+      this.classList.add(
+        'active'
+      );
+
+      document
+        .getElementById(
+          'modeFullBtn'
+        )
+        .classList.remove(
+          'active'
+        );
+
+      document
+        .getElementById(
+          'subMaskGroup'
+        )
+        .style.opacity = '1';
+
+      document
+        .getElementById(
+          'subMaskGroup'
+        )
+        .style.pointerEvents =
+        'auto';
+
+      renderResultsTable();
+    }
+  );
+
+/* =========================================================
+  完整模式
+  ========================================================= */
+
+document
+  .getElementById('modeFullBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      currentMaskMode =
+        'full';
+
+      this.classList.add(
+        'active'
+      );
+
+      document
+        .getElementById(
+          'modeMaskedBtn'
+        )
+        .classList.remove(
+          'active'
+        );
+
+      document
+        .getElementById(
+          'subMaskGroup'
+        )
+        .style.opacity =
+        '0.4';
+
+      document
+        .getElementById(
+          'subMaskGroup'
+        )
+        .style.pointerEvents =
+        'none';
+
+      renderResultsTable();
+    }
+  );
+
+/* =========================================================
+  遮蔽項目即時更新
+  ========================================================= */
+
+[
+  'optMaskEmail',
+  'optMaskName',
+  'optMaskPhone',
+  'optMaskId',
+  'optMaskNhi'
+].forEach(
+  id => {
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        'change',
+        () => {
+
+          if (
+            currentMaskMode ===
+            'masked'
+          ) {
+
+            renderResultsTable();
+          }
+        }
+      );
+  }
+);
+
+/* =========================================================
+  複製中獎名單
+  ========================================================= */
+
+document
+  .getElementById('copyWinnersBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      if (
+        currentWinners.length === 0
+      ) {
+        return;
+      }
+
+      let textRows = [];
+
+      let headerCols = [
+        '序號',
+        ...activeHeaders
+      ];
+
+      textRows.push(
+        headerCols.join('\t')
+      );
+
+      currentWinners.forEach(
+        winner => {
+
+          let rowCols = [
+            `#${winner._originalIndex}`
+          ];
+
+          activeHeaders.forEach(
+            h => {
+
+              let val =
+                winner[h] || '';
+
+              rowCols.push(
+                getFormattedValue(
+                  h,
+                  val
+                )
+              );
+            }
+          );
+
+          textRows.push(
+            rowCols.join('\t')
+          );
+        }
+      );
+
+      let copyText =
+        textRows.join('\n');
+
+      navigator.clipboard
+        .writeText(copyText)
+        .then(
+          () => {
+
+            alert(
+              '已成功複製【' +
+              currentPrizeName +
+              '】名單至剪貼簿！'
+            );
+          }
+        )
+        .catch(
+          err => {
+
+            alert(
+              '複製失敗，請手動選取複製。'
+            );
+          }
+        );
+    }
+  );
+
+/* =========================================================
+  匯出 CSV
+  ========================================================= */
+
+document
+  .getElementById('exportCsvBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      if (
+        currentWinners.length === 0
+      ) {
+        return;
+      }
+
+      let csvRows = [];
+
+      let headerCols = [
+        '序號',
+        ...activeHeaders
+      ];
+
+      csvRows.push(
+        headerCols
+          .map(
+            h =>
+              `"${h.replace(
+                /"/g,
+                '""'
+              )}"`
+          )
+          .join(',')
+      );
+
+      currentWinners.forEach(
+        winner => {
+
+          let rowCols = [
+            `"#${winner._originalIndex}"`
+          ];
+
+          activeHeaders.forEach(
+            h => {
+
+              let val =
+                winner[h] || '';
+
+              let formatted =
+                getFormattedValue(
+                  h,
+                  val
+                );
+
+              const isPhone =
+                phoneHeaderSet.has(h) ||
+                isPhoneValue(val);
+
+              const isNhi =
+                isNhiValue(val);
+
+              if (
+                (
+                  isPhone ||
+                  isNhi
+                ) &&
+                formatted.startsWith('0')
+              ) {
+
+                rowCols.push(
+                  '="' +
+                  formatted +
+                  '"'
+                );
+
+              } else {
+
+                rowCols.push(
+                  `"${formatted.replace(
+                    /"/g,
+                    '""'
+                  )}"`
+                );
+              }
+            }
+          );
+
+          csvRows.push(
+            rowCols.join(',')
+          );
+        }
+      );
+
+      let csvContent =
+        '\uFEFF' +
+        csvRows.join('\n');
+
+      let blob =
+        new Blob(
+          [csvContent],
+          {
+            type:
+              'text/csv;charset=utf-8;'
+          }
+        );
+
+      let url =
+        URL.createObjectURL(blob);
+
+      let link =
+        document.createElement('a');
+
+      let fileName =
+        currentPrizeName ||
+        '中獎名單';
+
+      let modeSuffix =
+        currentMaskMode === 'masked'
+          ? '_遮蔽版'
+          : '_完整版';
+
+      link.setAttribute(
+        'href',
+        url
+      );
+
+      link.setAttribute(
+        'download',
+        fileName +
+        modeSuffix +
+        '.csv'
+      );
+
+      document.body.appendChild(
+        link
+      );
+
+      link.click();
+
+      document.body.removeChild(
+        link
+      );
+
+      URL.revokeObjectURL(url);
+    }
+  );
+
+</script>
+
+
+<script id="v135-custom-date-picker-js">
+(function(){
+  'use strict';
+  const WEEK=['日','一','二','三','四','五','六'];
+  let activePicker=null;
+
+  function pad(n){return String(n).padStart(2,'0');}
+  function toISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fromISO(v){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')) return null;
+    const [y,m,day]=v.split('-').map(Number); const d=new Date(y,m-1,day);
+    return d.getFullYear()===y&&d.getMonth()===m-1&&d.getDate()===day?d:null;
+  }
+  function format(v){
+    const d=fromISO(v);
+    return d ? d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate()) : '';
+  }
+  function closeAll(except){
+    document.querySelectorAll('.custom-calendar').forEach(c=>{if(c!==except)c.classList.add('hidden');});
+    if(!except) activePicker=null;
+  }
+  function build(input){
+    if(!input || input.dataset.customDateReady) return;
+    input.dataset.customDateReady='1';
+    input.classList.add('native-date-source');
+    const wrap=document.createElement('div'); wrap.className='custom-date-wrap';
+    input.parentNode.insertBefore(wrap,input); wrap.appendChild(input);
+
+    const display=document.createElement('div');
+    display.className='custom-date-display'; display.tabIndex=0; display.setAttribute('role','button');
+    display.setAttribute('aria-label','選擇日期');
+    const text=document.createElement('span'); text.className='custom-date-text';
+    const icon=document.createElement('span'); icon.className='custom-date-icon'; icon.textContent='📅';
+    display.appendChild(text); display.appendChild(icon); wrap.appendChild(display);
+
+    const cal=document.createElement('div'); cal.className='custom-calendar hidden'; wrap.appendChild(cal);
+    let viewDate=fromISO(input.value)||new Date(); viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth(),1);
+
+    function syncText(){
+      const f=format(input.value); text.textContent=f||'請選擇日期'; display.classList.toggle('is-placeholder',!f);
+    }
+    function render(){
+      const y=viewDate.getFullYear(),m=viewDate.getMonth();
+      const selected=fromISO(input.value), today=new Date();
+      cal.innerHTML='';
+      const head=document.createElement('div'); head.className='cal-head';
+      const prev=document.createElement('button'); prev.type='button'; prev.className='cal-nav'; prev.textContent='‹'; prev.setAttribute('aria-label','上個月');
+      const title=document.createElement('div'); title.className='cal-title'; title.textContent=y+' 年 '+pad(m+1)+' 月';
+      const next=document.createElement('button'); next.type='button'; next.className='cal-nav'; next.textContent='›'; next.setAttribute('aria-label','下個月');
+      head.append(prev,title,next); cal.appendChild(head);
+      const grid=document.createElement('div'); grid.className='cal-grid';
+      WEEK.forEach(w=>{const e=document.createElement('div');e.className='cal-week';e.textContent=w;grid.appendChild(e);});
+      const first=new Date(y,m,1), start=new Date(y,m,1-first.getDay());
+      for(let i=0;i<42;i++){
+        const d=new Date(start); d.setDate(start.getDate()+i);
+        const b=document.createElement('button'); b.type='button'; b.className='cal-day';
+        if(d.getMonth()!==m)b.classList.add('other');
+        if(toISO(d)===toISO(today))b.classList.add('today');
+        if(selected&&toISO(d)===toISO(selected))b.classList.add('selected');
+        b.textContent=d.getDate();
+        b.addEventListener('click',function(){
+          input.value=toISO(d);
+          input.dispatchEvent(new Event('change',{bubbles:true}));
+          syncText(); cal.classList.add('hidden'); activePicker=null;
+        });
+        grid.appendChild(b);
+      }
+      cal.appendChild(grid);
+      const footer=document.createElement('div'); footer.className='cal-footer';
+      const todayBtn=document.createElement('button'); todayBtn.type='button'; todayBtn.className='cal-today'; todayBtn.textContent='今天';
+      todayBtn.addEventListener('click',function(){
+        input.value=toISO(new Date());
+        input.dispatchEvent(new Event('change',{bubbles:true}));
+        syncText(); cal.classList.add('hidden'); activePicker=null;
+      });
+      footer.appendChild(todayBtn); cal.appendChild(footer);
+      prev.onclick=function(e){e.stopPropagation();viewDate=new Date(y,m-1,1);render();};
+      next.onclick=function(e){e.stopPropagation();viewDate=new Date(y,m+1,1);render();};
+    }
+    function open(){
+      closeAll(cal); viewDate=fromISO(input.value)||new Date();
+      viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth(),1); render();
+
+      // V1.3.6：行動裝置專用。
+      // iOS Safari 對位於 backdrop-filter 玻璃容器內的 position:fixed 元素，
+      // 可能把 fixed 參考系綁在容器而非 viewport，造成月曆要滑動頁面後才看得到。
+      // 行動裝置開啟時將月曆暫時移到 body，讓 fixed 真正以 viewport 定位。
+      // V1.3.7：桌面版也將月曆移到 body，徹底脫離 Form 讀取區塊及其祖先定位環境。
+      // 原本只有手機版移到 body；桌面版仍留在 .custom-date-wrap 內，
+      // 因此 position:fixed 仍可能受到祖先 transform/filter/backdrop-filter 等影響。
+      if(cal.parentNode!==document.body){
+        document.body.appendChild(cal);
+      }
+      cal.classList.toggle('mobile-floating-calendar', window.innerWidth<=720);
+
+      cal.classList.remove('hidden');
+      // V1.3.8：強制使用 viewport 定位，避免任何殘留的 transform / margin / inset 規則干擾。
+      cal.style.position='fixed';
+      cal.style.margin='0';
+      cal.style.transform='none';
+      cal.style.inset='auto';
+
+      // 以實際被點擊的日期顯示框為唯一定位錨點，使用 viewport 座標。
+      const rect=display.getBoundingClientRect();
+      const gap=8;
+      const calendarWidth=Math.min(300,Math.max(240,window.innerWidth-48));
+      const calendarHeight=cal.offsetHeight;
+      const viewportHeight=window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const viewportWidth=window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const below=viewportHeight-rect.bottom-gap;
+      const above=rect.top-gap;
+      let top=(below>=calendarHeight || below>=above) ? rect.bottom+gap : rect.top-calendarHeight-gap;
+      let left=rect.left;
+      if(left+calendarWidth>viewportWidth-16) left=viewportWidth-16-calendarWidth;
+      if(left<16) left=16;
+      cal.style.width=calendarWidth+'px';
+      cal.style.left=Math.round(left)+'px';
+      cal.style.top=Math.round(Math.max(8,Math.min(top,viewportHeight-calendarHeight-8)))+'px';
+      activePicker=cal;
+      document.querySelectorAll('.custom-date-display[data-active-calendar="1"]').forEach(function(el){el.removeAttribute('data-active-calendar');});
+      display.setAttribute('data-active-calendar','1');
+    }
+    display.addEventListener('click',function(e){e.stopPropagation();open();});
+    display.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+    input.addEventListener('change',function(){syncText();render();});
+    syncText(); render();
+    wrap._syncCustomDate=syncText;
+    wrap._renderCustomDate=render;
+  }
+
+  function syncAll(){
+    document.querySelectorAll('#dateFilterGroup input[type="date"]').forEach(i=>{
+      const w=i.closest('.custom-date-wrap');
+      if(w&&w._syncCustomDate)w._syncCustomDate();
+    });
+  }
+
+  function init(){
+    const a=document.getElementById('dateFilterStart'), b=document.getElementById('dateFilterEnd');
+    build(a); build(b); syncAll();
+    document.addEventListener('click',function(e){if(!e.target.closest('.custom-date-wrap'))closeAll();});
+    const clear=document.getElementById('clearDateFilterBtn');
+    if(clear) clear.addEventListener('click',function(){setTimeout(syncAll,0);});
+    window.addEventListener('resize',function(){
+      if(activePicker&&!activePicker.classList.contains('hidden')){
+        const d=document.querySelector('.custom-date-display[data-active-calendar="1"]');
+        if(d)d.click();
+      }
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+</body>
+</html>
