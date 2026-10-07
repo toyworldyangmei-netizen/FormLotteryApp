@@ -1,6 +1,6 @@
 {
   "name": "form-lottery-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "表單抽選 App - Google Forms API 測試版",
   "main": "app/main.js",
   "author": "TOY WORLD",
