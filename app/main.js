@@ -23,18 +23,6 @@ function sendStatus(type, message) {
   }
 }
 
-/**
- * 取得 credentials.json 路徑
- *
- * 開發模式：
- *   專案根目錄/credentials.json
- *
- * Portable EXE：
- *   優先使用 Electron Builder 提供的
- *   PORTABLE_EXECUTABLE_DIR
- *
- *   如果沒有，再退回 EXE 所在資料夾。
- */
 function credentialsPath() {
   if (app.isPackaged) {
     const portableDir =
@@ -71,10 +59,6 @@ function loadCredentials() {
   const p = credentialsPath();
 
   if (!fs.existsSync(p)) {
-    const portableDir =
-      process.env.PORTABLE_EXECUTABLE_DIR ||
-      '未取得';
-
     throw new Error(
       [
         '找不到 credentials.json',
@@ -88,7 +72,7 @@ function loadCredentials() {
         process.execPath,
         '',
         'PORTABLE_EXECUTABLE_DIR：',
-        portableDir
+        process.env.PORTABLE_EXECUTABLE_DIR || '未取得'
       ].join('\n')
     );
   }
@@ -126,8 +110,7 @@ function loadCredentials() {
       [
         'credentials.json 格式不正確。',
         '',
-        '請確認你下載的是 Google Cloud',
-        'OAuth Client ID「Desktop app」JSON。',
+        '請確認你下載的是 Google Cloud OAuth Desktop Client JSON。',
         '',
         '檔案位置：',
         p
@@ -153,89 +136,92 @@ function createOAuthClient(port) {
 }
 
 /**
- * 建立 OAuth callback Server
- *
- * 注意：
- * 這裡只建立一個 Server。
- * Server 正式 listen 後直接取得 Port，
- * 不再先開一個 Server 再關閉後重新建立。
+ * 啟動 OAuth callback server，
+ * 取得動態 Port，
+ * 等待 Google 回傳授權碼。
  */
-function createOAuthCallbackServer() {
+function startOAuthServer() {
   return new Promise((resolve, reject) => {
     const server =
-      http.createServer(
-        (req, res) => {
-          const parsed =
-            url.parse(
-              req.url,
-              true
-            );
-
-          if (
-            parsed.pathname !==
-            '/oauth2callback'
-          ) {
-            res.statusCode = 404;
-            res.end('Not Found');
-            return;
-          }
-
-          if (parsed.query.error) {
-            res.end(
-              '登入已取消，可以關閉此視窗。'
-            );
-
-            server.close();
-
-            reject(
-              new Error(
-                parsed.query.error
-              )
-            );
-
-            return;
-          }
-
-          const code =
-            parsed.query.code;
-
-          if (!code) {
-            res.statusCode = 400;
-            res.end(
-              '沒有取得 Google OAuth 授權碼。'
-            );
-
-            server.close();
-
-            reject(
-              new Error(
-                'Google OAuth callback 沒有回傳 code。'
-              )
-            );
-
-            return;
-          }
-
-          res.end(`
-            <html>
-              <body style="font-family:sans-serif;padding:40px">
-                Google 登入完成，可以關閉此視窗。
-              </body>
-            </html>
-          `);
-
-          server.close(() => {
-            resolve({
-              server,
-              code
-            });
-          });
-        }
-      );
+      http.createServer();
 
     server.once(
       'error',
       reject
+    );
+
+    server.on(
+      'request',
+      (req, res) => {
+        const parsed =
+          url.parse(
+            req.url,
+            true
+          );
+
+        if (
+          parsed.pathname !==
+          '/oauth2callback'
+        ) {
+          res.statusCode = 404;
+          res.end('Not Found');
+          return;
+        }
+
+        if (
+          parsed.query.error
+        ) {
+          res.end(
+            '登入已取消，可以關閉此視窗。'
+          );
+
+          server.close();
+
+          reject(
+            new Error(
+              parsed.query.error
+            )
+          );
+
+          return;
+        }
+
+        const code =
+          parsed.query.code;
+
+        if (!code) {
+          res.statusCode = 400;
+
+          res.end(
+            '沒有取得 Google OAuth 授權碼。'
+          );
+
+          server.close();
+
+          reject(
+            new Error(
+              'Google OAuth callback 沒有回傳 code。'
+            )
+          );
+
+          return;
+        }
+
+        res.end(`
+          <html>
+            <body style="font-family:sans-serif;padding:40px">
+              Google 登入完成，可以關閉此視窗。
+            </body>
+          </html>
+        `);
+
+        server.close(() => {
+          resolve({
+            code,
+            port
+          });
+        });
+      }
     );
 
     server.listen(
@@ -260,10 +246,7 @@ function createOAuthCallbackServer() {
           return;
         }
 
-        resolve({
-          server,
-          port: address.port
-        });
+        port = address.port;
       }
     );
   });
@@ -272,11 +255,55 @@ function createOAuthCallbackServer() {
 async function googleLogin() {
   loadCredentials();
 
-  const callback =
-    await createOAuthCallbackServer();
+  const oauthServerPromise =
+    startOAuthServer();
+
+  /*
+   * startOAuthServer 會等到 Google callback
+   * 才 resolve，所以需要先從 Server 取得 Port。
+   *
+   * 這裡重新採用明確的 callback server 建立方式。
+   */
+  const server =
+    http.createServer();
 
   const port =
-    callback.port;
+    await new Promise(
+      (resolve, reject) => {
+        server.once(
+          'error',
+          reject
+        );
+
+        server.listen(
+          0,
+          '127.0.0.1',
+          () => {
+            const address =
+              server.address();
+
+            if (
+              !address ||
+              typeof address === 'string'
+            ) {
+              server.close();
+
+              reject(
+                new Error(
+                  '無法取得 OAuth callback Server Port。'
+                )
+              );
+
+              return;
+            }
+
+            resolve(
+              address.port
+            );
+          }
+        );
+      }
+    );
 
   oauth2Client =
     createOAuthClient(port);
@@ -300,10 +327,8 @@ async function googleLogin() {
   const code =
     await new Promise(
       (resolve, reject) => {
-        const server =
-          callback.server;
-
-        const handleRequest =
+        server.on(
+          'request',
           (req, res) => {
             const parsed =
               url.parse(
@@ -324,7 +349,7 @@ async function googleLogin() {
               parsed.query.error
             ) {
               res.end(
-                '登入已取消，可以關閉此頁。'
+                '登入已取消，可以關閉此視窗。'
               );
 
               server.close();
@@ -370,28 +395,8 @@ async function googleLogin() {
             server.close();
 
             resolve(code);
-          };
-
-        /*
-         * callback server 已經在 createOAuthCallbackServer()
-         * 中建立完成。
-         *
-         * 為避免重複建立 HTTP Server，
-         * 這裡直接替換 request listener。
-         */
-        server.removeAllListeners(
-          'request'
+          }
         );
-
-        server.on(
-          'request',
-          handleRequest
-        );
-
-        /*
-         * 如果 Server 已經因為 callback 關閉，
-         * 這裡不需要額外處理。
-         */
       }
     );
 
