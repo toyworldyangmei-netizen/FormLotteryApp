@@ -1,40 +1,142 @@
 const $ = (id) => document.getElementById(id);
-let forms = [];
-let selectedId = null;
+const loginBtn = $('loginBtn'), refreshBtn = $('refreshBtn'), logoutBtn = $('logoutBtn');
+const formsList = $('formsList'), statusText = $('statusText'), accountPill = $('accountPill');
+let currentFormId = '';
 
-function status(text, type='info'){ $('statusPill').textContent = `● ${text}`; }
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function typeName(item){const t=item.itemId?'題目':'';return t || '表單項目';}
-
-async function loadForms(){
-  try{
-    status('正在讀取 Google 表單…');
-    forms = await window.formLotteryAPI.listForms();
-    $('formCount').textContent = `${forms.length} 個表單`;
-    $('forms').innerHTML = forms.length ? forms.map(f=>`<button class="form-item ${f.id===selectedId?'active':''}" data-id="${esc(f.id)}"><div class="form-name">${esc(f.name||'未命名表單')}</div><div class="form-meta">更新：${esc(f.modifiedTime||'')} · Form ID：${esc(f.id)}</div></button>`).join('') : '<div class="empty">目前帳號沒有可讀取的 Google 表單。</div>';
-    document.querySelectorAll('.form-item').forEach(b=>b.addEventListener('click',()=>selectForm(b.dataset.id)));
-    status('Google 帳號已連線');
-  }catch(e){status('讀取失敗'); $('forms').innerHTML=`<div class="empty">${esc(e.message||String(e))}</div>`;}
+function setStatus(text, type='normal') {
+  statusText.textContent = text;
+  statusText.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--green)' : '';
 }
 
-async function selectForm(id){
-  selectedId=id; $('responsesBtn').disabled=false; $('detailSub').textContent='讀取中…'; $('detail').innerHTML='<div class="empty">正在讀取表單內容…</div>';
-  document.querySelectorAll('.form-item').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
-  try{
-    const form=await window.formLotteryAPI.readForm(id);
-    $('detailSub').textContent=form.info?.title?.text || form.info?.title || 'Google 表單';
-    const items=form.items||[];
-    $('detail').innerHTML=items.length?items.map((item,i)=>`<div class="question"><div class="q-title">${i+1}. ${esc(item.title||item.description||'未命名題目')}</div><div class="q-type">${esc(typeName(item))}</div></div>`).join(''):'<div class="empty">這份表單目前沒有可顯示的題目。</div>';
-  }catch(e){$('detailSub').textContent='讀取失敗';$('detail').innerHTML=`<div class="empty">${esc(e.message||String(e))}</div>`;}
+function setLoggedIn(email) {
+  accountPill.textContent = email || '已登入';
+  loginBtn.textContent = '✓ Google 已登入';
+  loginBtn.disabled = true;
+  refreshBtn.disabled = false;
+  logoutBtn.disabled = false;
 }
 
-async function readResponses(){
-  if(!selectedId)return;
-  try{const rows=await window.formLotteryAPI.readResponses(selectedId); $('detail').insertAdjacentHTML('beforeend',`<div class="response-box">目前讀到 ${rows.length} 筆回覆。\n\n${esc(JSON.stringify(rows.slice(0,3),null,2))}</div>`);}catch(e){$('detail').insertAdjacentHTML('beforeend',`<div class="response-box">讀取回覆失敗：${esc(e.message||String(e))}</div>`);}
+function resetLogin() {
+  accountPill.textContent = '尚未登入';
+  loginBtn.textContent = '🔵 使用 Google 帳號登入';
+  loginBtn.disabled = false;
+  refreshBtn.disabled = true;
+  logoutBtn.disabled = true;
+  formsList.className = 'forms-list empty';
+  formsList.innerHTML = '<div><div class="empty-icon">📋</div><div>尚未載入表單</div></div>';
+  $('detailPanel').hidden = true;
+  currentFormId = '';
+  setStatus('登入後會在這裡顯示你可以使用的 Google Forms。');
 }
 
-$('loginBtn').onclick=async()=>{try{await window.formLotteryAPI.login();await loadForms();}catch(e){status('登入失敗');alert(e.message||String(e));}};
-$('logoutBtn').onclick=async()=>{await window.formLotteryAPI.logout();forms=[];selectedId=null;$('forms').innerHTML='<div class="empty">已登出 Google 帳號。</div>';$('detail').innerHTML='<div class="empty">重新登入後選擇表單。</div>';status('尚未登入');};
-$('refreshBtn').onclick=loadForms;$('refreshSmall').onclick=loadForms;$('responsesBtn').onclick=readResponses;$('openV138Btn').onclick=()=>window.formLotteryAPI.openV138Reference();
-window.formLotteryAPI.onStatus((p)=>status(p.message||'狀態更新'));
-(async()=>{try{if(await window.formLotteryAPI.hasToken()) await loadForms();}catch(e){status('尚未登入');}})();
+async function loadForms() {
+  setStatus('正在讀取你的 Google 表單…');
+  refreshBtn.disabled = true;
+  try {
+    const result = await window.formLotteryAPI.listForms();
+    const forms = result.forms || [];
+    formsList.className = forms.length ? 'forms-list' : 'forms-list empty';
+    if (!forms.length) {
+      formsList.innerHTML = '<div><div class="empty-icon">📭</div><div>目前沒有找到可用的 Google Form</div></div>';
+      setStatus('目前沒有找到 Google Form。');
+      return;
+    }
+    formsList.innerHTML = forms.map(f => `<button class="form-card" data-id="${escapeAttr(f.id)}"><div><div class="form-name">${escapeHtml(f.name || '未命名表單')}</div><div class="form-meta">${f.modifiedTime ? `最後修改：${new Date(f.modifiedTime).toLocaleString('zh-TW')}` : 'Google Form'}<br><span>Form ID：${escapeHtml(f.id)}</span></div></div><span class="open-dot"></span></button>`).join('');
+    formsList.querySelectorAll('.form-card').forEach(card => card.addEventListener('click', () => loadForm(card.dataset.id)));
+    setStatus(`✓ 找到 ${forms.length} 份 Google Form。`, 'success');
+  } catch (err) {
+    if (/unauthorized|invalid_grant|invalid authentication credentials|invalid_token/i.test(err.message || '')) {
+      resetLogin();
+      setStatus('登入狀態已失效，請重新登入 Google。', 'error');
+    } else {
+      setStatus(err.message || '讀取表單失敗。', 'error');
+    }
+  } finally {
+    refreshBtn.disabled = false;
+  }
+}
+
+async function loadForm(id) {
+  currentFormId = id;
+  $('detailPanel').hidden = false;
+  $('formTitle').textContent = '讀取表單中…';
+  $('formMeta').textContent = '';
+  $('questionList').innerHTML = '<div class="question">正在向 Google Forms API 取得資料…</div>';
+  try {
+    const result = await window.formLotteryAPI.readForm(id);
+    const form = result.form || {};
+    $('formTitle').textContent = form.info?.title || '未命名表單';
+    const items = form.items || [];
+    $('formMeta').textContent = `Form ID：${id}｜題目/項目：${items.length}`;
+    $('questionList').innerHTML = items.map((item, i) => `<div class="question"><div class="q-title">${i + 1}. ${escapeHtml(item.title || '未命名項目')}</div><div class="q-type">${escapeHtml(item.itemId || '')} ${item.questionItem ? '｜Question' : ''}</div></div>`).join('') || '<div class="question">這份表單目前沒有可顯示的項目。</div>';
+    setStatus('✓ 表單內容讀取成功。', 'success');
+    await loadResponses(id);
+  } catch (err) {
+    $('formTitle').textContent = '讀取失敗';
+    $('questionList').innerHTML = `<div class="question">${escapeHtml(err.message || '無法讀取表單。')}</div>`;
+    setStatus(err.message || '讀取表單失敗。', 'error');
+  }
+}
+
+async function loadResponses(id) {
+  try {
+    const result = await window.formLotteryAPI.readResponses(id);
+    const responses = result.responses || [];
+    const box = document.createElement('div');
+    box.className = 'question response-summary';
+    box.innerHTML = `<div class="q-title">目前讀到 ${responses.length} 筆回覆。</div><button type="button" class="secondary" id="showResponsesBtn">讀取回覆</button><pre id="responseJson" hidden></pre>`;
+    $('questionList').appendChild(box);
+    const pre = box.querySelector('#responseJson');
+    pre.textContent = JSON.stringify(responses, null, 2);
+    box.querySelector('#showResponsesBtn').addEventListener('click', (e) => {
+      const hidden = pre.hidden;
+      pre.hidden = !hidden;
+      e.currentTarget.textContent = hidden ? '收起回覆' : '讀取回覆';
+    });
+  } catch (err) {
+    const box = document.createElement('div');
+    box.className = 'question';
+    box.textContent = `回覆讀取失敗：${err.message || err}`;
+    $('questionList').appendChild(box);
+  }
+}
+
+function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+loginBtn.addEventListener('click', async () => {
+  loginBtn.disabled = true;
+  setStatus('正在開啟 Google 登入…');
+  try { await window.formLotteryAPI.login(); }
+  catch (err) { setStatus(err.message || 'Google 登入失敗。', 'error'); loginBtn.disabled = false; }
+});
+
+refreshBtn.addEventListener('click', loadForms);
+logoutBtn.addEventListener('click', async () => { await window.formLotteryAPI.logout(); resetLogin(); });
+
+window.formLotteryAPI.onStatus(async (payload) => {
+  if (payload.type === 'logged-in' || payload.type === 'restored') {
+    setLoggedIn(payload.data?.email || payload.data?.email || '已登入');
+    setStatus(payload.type === 'restored' ? '✓ 已恢復 Google 登入狀態，正在載入表單…' : '✓ Google 登入成功，正在載入你的表單…', 'success');
+    await loadForms();
+  } else if (payload.type === 'logged-out') {
+    resetLogin();
+  } else if (payload.type === 'error') {
+    setStatus(payload.message, 'error');
+    loginBtn.disabled = false;
+  }
+});
+
+(async () => {
+  try {
+    const state = await window.formLotteryAPI.restoreAuth();
+    if (state.loggedIn) {
+      setLoggedIn(state.account?.email || '已登入');
+      await loadForms();
+    } else {
+      resetLogin();
+    }
+  } catch (_) {
+    resetLogin();
+  }
+})();

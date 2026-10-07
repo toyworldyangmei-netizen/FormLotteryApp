@@ -1,11 +1,40 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>表單抽選 App</title><link rel="stylesheet" href="app.css"></head>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>表單抽選 App API 測試 V1.0.2</title>
+  <link rel="stylesheet" href="app.css">
+</head>
 <body>
-<div class="orb orb-a"></div><div class="orb orb-b"></div>
-<header><div><div class="eyebrow">FORM LOTTERY APP · API TEST</div><h1>🎯 表單抽選 App</h1><p>V1.3.8 UI 方向 · Google Forms API 測試版</p></div><div class="actions"><button id="loginBtn" class="primary">🔵 使用 Google 帳號登入</button><button id="logoutBtn" class="ghost">登出</button></div></header>
-<main>
-<section class="glass hero"><div><span class="pill" id="statusPill">● 尚未登入</span><h2>先登入你的 Google 帳號</h2><p>這個測試版不使用原本私有 Apps Script 後端。登入後，App 會直接讀取你自己有權限使用的 Google 表單。</p></div><div class="hero-actions"><button id="refreshBtn">↻ 重新讀取表單</button><button id="openV138Btn">查看 V1.3.8 原版</button></div></section>
-<section class="grid"><div class="glass panel"><div class="panel-head"><div><h3>我的 Google 表單</h3><small id="formCount">尚未載入</small></div><button id="refreshSmall">重新整理</button></div><div id="forms" class="forms"><div class="empty">登入後會在這裡顯示你的 Google Forms。</div></div></div>
-<div class="glass panel detail"><div class="panel-head"><div><h3>表單內容</h3><small id="detailSub">尚未選擇</small></div><button id="responsesBtn" disabled>讀取回覆</button></div><div id="detail" class="detail-body"><div class="empty">選擇左側表單後查看題目。</div></div></div></section>
-</main><footer>測試版本 · credentials.json 請放在 EXE 同一層，勿上傳至 GitHub</footer>
-<script src="renderer.js"></script></body></html>
+  <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">🎯</div><div><div class="brand-title">表單抽選 App</div><div class="brand-sub">Google API 測試版 V1.0.2</div></div></div>
+      <div class="account-pill" id="accountPill">尚未登入</div>
+    </header>
+
+    <section class="hero panel">
+      <div>
+        <div class="eyebrow">GOOGLE FORM LOTTERY</div>
+        <h1>登入後，直接選擇要抽的表單</h1>
+        <p>V1.0.2：登入狀態會保存在本機。重新開啟 App 時會自動恢復登入，Access Token 過期時會使用 Refresh Token 更新。</p>
+      </div>
+      <button class="primary" id="loginBtn">🔵 使用 Google 帳號登入</button>
+    </section>
+
+    <section class="panel forms-panel">
+      <div class="section-head"><div><h2>我的 Google 表單</h2><p id="statusText">登入後會在這裡顯示你可以使用的 Google Forms。</p></div><button class="secondary" id="refreshBtn" disabled>↻ 重新整理</button></div>
+      <div id="formsList" class="forms-list empty"><div><div class="empty-icon">📋</div><div>尚未載入表單</div></div></div>
+    </section>
+
+    <section class="panel detail-panel" id="detailPanel" hidden>
+      <div class="section-head"><div><h2 id="formTitle">表單</h2><p id="formMeta"></p></div></div>
+      <div id="questionList" class="question-list"></div>
+    </section>
+
+    <footer><span>V1.0.2：Google OAuth／Token 持久化／自動恢復登入／Forms API</span><button class="text-btn" id="logoutBtn" disabled>登出</button></footer>
+  </main>
+  <script src="renderer.js"></script>
+</body>
+</html>
