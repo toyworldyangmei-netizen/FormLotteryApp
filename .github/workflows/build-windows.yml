@@ -22,9 +22,9 @@ jobs:
       - name: Build Windows EXE
         run: npm run build:win
 
-      - name: Upload Windows App
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: FormLotteryApp-Windows
-          path: dist/**
+          name: FormLotteryApp-Windows-V1.0.1
+          path: dist/FormLotteryApp-*.exe
           if-no-files-found: error
